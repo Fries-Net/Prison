@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.bukkit.event.EventException;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.RegisteredListener;
 
 import com.cryptomorin.xseries.XMaterial;
@@ -102,8 +103,6 @@ public class PrisonDebugBlockInspector
     @Subscribe
     public void onPlayerInteract( PrisonPlayerInteractEvent e ) {
     	
-    	List<String> output = new ArrayList<>();
-    	
     	
     	// Cool down: run no sooner than every 2 seconds... prevents duplicate runs:
     	if ( lastAccess != 0 && (System.currentTimeMillis() - lastAccess) < 2000 ) {
@@ -125,7 +124,19 @@ public class PrisonDebugBlockInspector
         boolean isSneaking = player.isSneaking();
         
         Location location = e.getClicked();
-        SpigotBlock sBlock = (SpigotBlock) location.getBlockAt();
+        
+        
+        debugBlockBreak( player, isSneaking, location );
+        
+    }
+    
+    public void debugBlockBreak( SpigotPlayer player, boolean isSneaking,
+    		Location location
+    		) {
+
+    	List<String> output = new ArrayList<>();
+    	
+    	SpigotBlock sBlock = (SpigotBlock) location.getBlockAt();
         
 //        UUID playerUUID = e.getPlayer().getUUID();
 //        Mine mine = obbMines.findMine( playerUUID, sBlock,  null, null ); 
@@ -316,8 +327,15 @@ public class PrisonDebugBlockInspector
 //    	boolean isLeaves = blockName.contains( "leaves" );
 //    	boolean isWood = blockName.matches( "wood|log|planks|sapling" );
     	
+    	ItemStack ourItem = new SpigotItemStack( heldItem );
+        ItemStack toolItem = SelectionManager.SELECTION_TOOL;
     	
-    	SpigotItemStack tool = useShovel ?
+    	boolean isMineWand = ourItem != null && ourItem.equals(toolItem);
+    	
+    	// If what is being held is not a mine wand, then use what is being held:
+    	SpigotItemStack tool = 
+    			!isMineWand ? (SpigotItemStack) ourItem :
+    			useShovel ?
     			new SpigotItemStack( XMaterial.DIAMOND_SHOVEL.parseItem() ) :
     			( useAxe ? 
     					new SpigotItemStack( XMaterial.DIAMOND_AXE.parseItem() ) :

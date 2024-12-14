@@ -17,6 +17,11 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19d 2024-10-11
 
 
+* **Mines: Debug block breakage.  Created a new command '/mines debugBlockBreak` that will now be able to use tools from other plugins.**
+Realized there was a problem with using the mine wand when testing block breakage in that you could not test with any other tool, which would prevent other plugins from handling the events like they should.
+So now, by holding any tool in your hand, and issuing the command '/mines debugBlockBreak' it will test the block breakage with whatever they are holding.
+
+
 * **Players: Fixed a problem with getting  the vector for where the player is looking.  The actual vector was getting lost so the result was that nothing was able to be properly calculated.**
 This was fixed by creating an internal prison vector which could be used instead. 
 

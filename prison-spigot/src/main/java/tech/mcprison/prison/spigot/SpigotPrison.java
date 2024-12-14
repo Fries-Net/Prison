@@ -60,6 +60,7 @@ import tech.mcprison.prison.ranks.managers.RankManager;
 import tech.mcprison.prison.sellall.PrisonSellall;
 import tech.mcprison.prison.sellall.commands.SellallCommands;
 import tech.mcprison.prison.spigot.autofeatures.AutoManagerFeatures;
+import tech.mcprison.prison.spigot.autofeatures.PrisonDebugBlockInspectorCommand;
 import tech.mcprison.prison.spigot.autofeatures.events.AutoManagerBlockBreakEvents;
 import tech.mcprison.prison.spigot.backpacks.BackpacksListeners;
 import tech.mcprison.prison.spigot.backpacks.BackpacksUtil;
@@ -332,6 +333,7 @@ public class SpigotPrison
         }
         
         Bukkit.getPluginManager().registerEvents(new SpigotListener(), this);
+        
 
         try {
             isBackPacksEnabled = getConfig().getBoolean("backpacks");
@@ -1237,6 +1239,11 @@ public class SpigotPrison
             Prison.get().getModuleManager().getDisabledModules().add( PrisonUtilsModule.MODULE_NAME );
         }
         
+        
+        
+        // Register the '/mines debugBlockBreak' command:
+        Prison.get().getCommandHandler().registerCommands( new PrisonDebugBlockInspectorCommand() );	
+        		
         
     }
 
