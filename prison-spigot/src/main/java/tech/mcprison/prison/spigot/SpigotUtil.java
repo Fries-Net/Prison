@@ -55,6 +55,7 @@ import tech.mcprison.prison.spigot.game.SpigotWorld;
 import tech.mcprison.prison.spigot.integrations.IntegrationMinepacksPlugin;
 import tech.mcprison.prison.util.Location;
 import tech.mcprison.prison.util.Text;
+import tech.mcprison.prison.util.Vector;
 
 /**
  * Utilities for converting Prison-Core types to Spigot types.
@@ -1095,9 +1096,19 @@ public class SpigotUtil {
 
     public static Location bukkitLocationToPrison(org.bukkit.Location bukkitLocation) {
     	
-    	return new Location(new SpigotWorld(bukkitLocation.getWorld()), bukkitLocation.getX(),
+    	Location loc = new Location(new SpigotWorld(bukkitLocation.getWorld()), bukkitLocation.getX(),
     			bukkitLocation.getY(), bukkitLocation.getZ(), bukkitLocation.getPitch(),
     			bukkitLocation.getYaw() );
+    	
+    	double x = bukkitLocation.getDirection().getX();
+    	double y = bukkitLocation.getDirection().getY();
+    	double z = bukkitLocation.getDirection().getZ();
+    	
+    	Vector direction = new Vector( x, y, z );
+    	
+    	loc.setDirection( direction );
+    	
+    	return loc;
     	
 //    	org.bukkit.util.Vector v = bukkitLocation.getDirection();
 //    	Vector direction = new Vector( v.getX(), v.getY(), v.getZ() );
@@ -1248,14 +1259,15 @@ public class SpigotUtil {
      * @return OfflinePlayer
      */
     public static OfflinePlayer getBukkitOfflinePlayer( UUID uuid ) {
-    	OfflinePlayer results = null;
     	
-    	for ( OfflinePlayer offP : Bukkit.getOfflinePlayers() ) {
-    		if ( uuid != null && offP.getUniqueId().equals(uuid) ) {
-    			results = offP;
-    			break;
-	  		}
-		}
+    	OfflinePlayer results = Bukkit.getOfflinePlayer(uuid);
+    	
+//    	for ( OfflinePlayer offP : Bukkit.getOfflinePlayers() ) {
+//    		if ( uuid != null && offP.getUniqueId().equals(uuid) ) {
+//    			results = offP;
+//    			break;
+//	  		}
+//		}
     	
     	return results;
     }

@@ -17,6 +17,10 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19d 2024-10-11
 
 
+* **Players: Fixed a problem with getting  the vector for where the player is looking.  The actual vector was getting lost so the result was that nothing was able to be properly calculated.**
+This was fixed by creating an internal prison vector which could be used instead. 
+
+
 2024-12-14
 
 * **Prison was gifted over 46,000 players!!!** 
