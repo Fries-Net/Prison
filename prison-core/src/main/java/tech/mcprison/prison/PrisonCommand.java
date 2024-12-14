@@ -638,9 +638,13 @@ public class PrisonCommand
 		if ( playerName != null ) {
 			Optional<Player> opt = Prison.get().getPlatform().getPlayer( playerName );
 			if ( !opt.isPresent() ) {
-				opt = Prison.get().getPlatform().getOfflinePlayer( playerName );
+				
+				result = Prison.get().getPlatform().getRankPlayer( null, playerName );
+//				opt = Prison.get().getPlatform().getOfflinePlayer( playerName );
 			}
-			if ( opt.isPresent() ) {
+			
+//			if ( opt.isPresent() ) {
+			else {
 				result = opt.get();
 			}
 		}
@@ -2563,7 +2567,8 @@ public class PrisonCommand
 		}
 		if ( player == null ) {
 			
-			player = Prison.get().getPlatform().getOfflinePlayer( playerName ).orElse( null );
+			player = Prison.get().getPlatform().getRankPlayer( null, playerName );
+//			player = Prison.get().getPlatform().getOfflinePlayer( playerName ).orElse( null );
 		}
 		return player;
 	}

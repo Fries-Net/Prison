@@ -416,6 +416,7 @@ public class RankPlayerFactory
     		{
     			if ( key != null && key.getName().equalsIgnoreCase( ladder.getName() ) ) {
     				results = rankPlayer.getLadderRanks().get( key );
+    				break;
     			}
     		}
     	}

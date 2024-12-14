@@ -1,12 +1,11 @@
 package tech.mcprison.prison.spigot.utils;
 
-import java.util.Optional;
-
 import org.bukkit.Bukkit;
 
 import tech.mcprison.prison.Prison;
 import tech.mcprison.prison.internal.CommandSender;
 import tech.mcprison.prison.internal.Player;
+import tech.mcprison.prison.ranks.data.RankPlayer;
 import tech.mcprison.prison.spigot.game.SpigotOfflinePlayer;
 import tech.mcprison.prison.spigot.game.SpigotPlayer;
 
@@ -158,24 +157,44 @@ public abstract class PrisonUtils
 	protected SpigotPlayer getSpigotPlayer( String playerName, boolean useOfflinePlayer ) {
 		SpigotPlayer result = null;
 		
-		if ( playerName != null ) {
-			Optional<Player> opt = Prison.get().getPlatform().getPlayer( playerName );
+		RankPlayer rPlayer = Prison.get().getPlatform().getRankPlayer( null, playerName );
+		
+		if ( rPlayer != null ) {
+			Player player = Prison.get().getPlatform().getPlayer( rPlayer.getUUID() ).orElse(null);
 			
-			if ( opt.isPresent() ) {
-				result = (SpigotPlayer) opt.get();
+			if ( player != null ) {
+				result = (SpigotPlayer) player;
 			}
 			else if ( useOfflinePlayer ) {
-				Optional<Player> optOLP = Prison.get().getPlatform().getOfflinePlayer( playerName );
+				Player offLinePlayer = Prison.get().getPlatform().getOfflinePlayer( player.getUUID() ).orElse( null );
 				
-				if ( optOLP.isPresent() ) {
+				if ( offLinePlayer != null ) {
 					
-					SpigotOfflinePlayer offlinePlayer = (SpigotOfflinePlayer) optOLP.get();
+					SpigotOfflinePlayer offlinePlayer = (SpigotOfflinePlayer) offLinePlayer;
 					
 					result = new SpigotPlayer( offlinePlayer.getWrapper().getPlayer() );
 				}
 			}
-			
 		}
+		
+//		if ( playerName != null ) {
+//			Optional<Player> opt = Prison.get().getPlatform().getPlayer( playerName );
+//			
+//			if ( opt.isPresent() ) {
+//				result = (SpigotPlayer) opt.get();
+//			}
+//			else if ( useOfflinePlayer ) {
+//				Optional<Player> optOLP = Prison.get().getPlatform().getOfflinePlayer( playerName );
+//				
+//				if ( optOLP.isPresent() ) {
+//					
+//					SpigotOfflinePlayer offlinePlayer = (SpigotOfflinePlayer) optOLP.get();
+//					
+//					result = new SpigotPlayer( offlinePlayer.getWrapper().getPlayer() );
+//				}
+//			}
+//			
+//		}
 		return result;
 	}
 	

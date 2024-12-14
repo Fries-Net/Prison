@@ -26,7 +26,6 @@ import tech.mcprison.prison.Prison;
 import tech.mcprison.prison.PrisonAPI;
 import tech.mcprison.prison.convert.ConversionManager;
 import tech.mcprison.prison.integration.IntegrationType;
-import tech.mcprison.prison.internal.Player;
 import tech.mcprison.prison.localization.LocaleManager;
 import tech.mcprison.prison.modules.ModuleManager;
 import tech.mcprison.prison.modules.ModuleStatus;
@@ -313,6 +312,13 @@ public class PrisonRanks
     	return success;
     }
 
+    /**
+     * <p>This is actually a very bad idea to add any players that have not joined.
+     * This should be disabled.  When a player joins the server for the first time,
+     * then it will add them successfully.
+     * </p>
+     * 
+     */
 	public void checkAllPlayersForJoin()
 	{
 		
@@ -323,6 +329,8 @@ public class PrisonRanks
 								"prison-ranks.startup.add-new-players-on-startup" );
 		
 		if ( addNewPlayers ) {
+			
+			long startMs = System.currentTimeMillis();
 			
 			RankUpCommand rankupCommands = rankManager.getRankupCommands();
 			
@@ -335,17 +343,33 @@ public class PrisonRanks
 				int addedPlayers = 0;
 				int fixedPlayers = 0;
 				
-				for ( Player player : Prison.get().getPlatform().getOfflinePlayers() ) {
-					
-					// getPlayer() will add a player who does not exist:
-					RankPlayer rPlayer = playerManager.getPlayer( player );
-					if ( rPlayer != null ) {
-						if ( rPlayer.checkName( player.getName() ) ) {
-							playerManager.savePlayer( rPlayer );
-							addedPlayers++;
-						}
-					}
-				}
+				List<RankPlayer> rPlayers = playerManager.getPlayers();
+				
+				// NOTE: The Platform.getOfflinePlayers() only returns the playerManager.getPlayers() because
+				//       bukkit can seriously lag the server and kill it.
+//				List<Player> players = Prison.get().getPlatform().getOfflinePlayers();
+//				
+//				String msg = String.format(
+//						"PrisonRanks: checkAllPlayersForJoin: Prison has %s players.  Bukkit has %s.  "
+//						+ "Any player who is not in Prison will have to join prison to be added to prison.",
+//						Prison.get().getDecimalFormatInt().format( rPlayers.size() ),
+//						Prison.get().getDecimalFormatInt().format( players.size() )
+//						);
+//				
+//				Output.get().logInfo( msg );
+				
+				// Prison will no longer add offline players.  They must join to be added.
+//				for ( Player player : players ) {
+//					
+//					// getPlayer() will add a player who does not exist:
+//					RankPlayer rPlayer = playerManager.getPlayer( player );
+//					if ( rPlayer != null ) {
+//						if ( rPlayer.checkName( player.getName() ) ) {
+//							playerManager.savePlayer( rPlayer );
+//							addedPlayers++;
+//						}
+//					}
+//				}
 				
 				
 				RankPlayerFactory rankPlayerFactory = new RankPlayerFactory();
@@ -364,28 +388,28 @@ public class PrisonRanks
 				}
 				
 				
-				for ( RankPlayer rPlayer : playerManager.getPlayers() ) {
+				for ( RankPlayer rPlayer : rPlayers ) {
 					
 //        		@SuppressWarnings( "unused" )
 //				String rp = rPlayer.toString();
 					
-					Rank rankOnDefault = null;
+//					Rank rankOnDefault = null;
 					
 					PlayerRank pRank = rankPlayerFactory.getRank( rPlayer, defaultLadder );
 					
-					if ( pRank != null ) {
-						
-						rankOnDefault = pRank.getRank();
-						
-//        			Output.get().logInfo( "#### %s  ladder = %s  isRankNull= %s  rank= %s %s [%s]" ,
-//        					rPlayer.getName(),
-//        					defaultLadder.getName(), 
-//        					(rankOnDefault == null ? "true" : "false"), (rankOnDefault == null ? "null" : rankOnDefault.getName()),
-//        					(rankOnDefaultStr == null ? "true" : "false"), (rankOnDefaultStr == null ? "null" : rankOnDefaultStr.getName()),
-//        					rp );
-						
-					}
-					if ( rankOnDefault == null ) {
+//					if ( pRank != null ) {
+//						
+//						rankOnDefault = pRank.getRank();
+//						
+////        			Output.get().logInfo( "#### %s  ladder = %s  isRankNull= %s  rank= %s %s [%s]" ,
+////        					rPlayer.getName(),
+////        					defaultLadder.getName(), 
+////        					(rankOnDefault == null ? "true" : "false"), (rankOnDefault == null ? "null" : rankOnDefault.getName()),
+////        					(rankOnDefaultStr == null ? "true" : "false"), (rankOnDefaultStr == null ? "null" : rankOnDefaultStr.getName()),
+////        					rp );
+//						
+//					}
+					if ( pRank == null || pRank.getRank() == null ) {
 						
 						rankupCommands.setPlayerRank( rPlayer, defaultRank );
 						
@@ -406,7 +430,11 @@ public class PrisonRanks
 				}
 			}
 			
-			Output.get().logInfo( "Ranks: Finished First Join Checks." );
+			long endMs =  System.currentTimeMillis();
+			
+			long duration = endMs - startMs;
+			
+			Output.get().logInfo( "Ranks: Finished First Join Checks: " + duration + " ms" );
 		}
 		else {
 			

@@ -337,7 +337,8 @@ public class SpigotPlatform
 //                }));
     }
 
-    @Override public Optional<Player> getPlayer(UUID uuid) {
+    @Override 
+    public Optional<Player> getPlayer(UUID uuid) {
     	org.bukkit.entity.Player playerBukkit = Bukkit.getPlayer(uuid);
 
     	return Optional.ofNullable( playerBukkit == null ? null : new SpigotPlayer(playerBukkit) );
@@ -357,109 +358,183 @@ public class SpigotPlatform
 //                    return player;
 //                }));
     }
+    
+    public Player getPlayer( org.bukkit.entity.Player playerBukkit ) {
+    	
+    	return new SpigotPlayer(playerBukkit);    	
+    }
 
-    @Override public List<Player> getOnlinePlayers() {
+    /**
+     * <p>If there are a lot of players on a server, getting bukkit's online players should be
+     * a fairly low cost operation since they all should have been loaded in to memory and there
+     * shouldn't be any disk access to load all of the players.
+     * </p>
+     * 
+     * <p>The functions that are using this list of players, are either teleporting players out of 
+     * a mine before resetting the mine, or broadcasting messages to the players.  So they do need
+     * to be online.
+     * </p>
+     * 
+     */
+    @Override 
+    public List<Player> getOnlinePlayers() {
         return Bukkit.getOnlinePlayers().stream()
-            .map(player -> getPlayer(player.getUniqueId()).get())
+            .map( player -> getPlayer( player ))
             .collect(Collectors.toList());
     }
 
+    /**
+     * <p>Warning: Do not use because the Bukkit.getOfflinePlayer( name ) is deprecated.
+     * Use instead, the getRankPlayer() and if they exist, which means they are setup in prison,
+     * then you will have their UUID to use the Bukkit.getOfflinePlayer( uuid ) function.
+     * </p>
+     */
     @Override
     public Optional<Player> getOfflinePlayer(String name) {
-    	return getOfflinePlayer(name, null);
+    	
+    	Player player = null;
+    	
+		try {
+			OfflinePlayer oPlayer = Bukkit.getOfflinePlayer( name );
+			player = (oPlayer == null ? null : new SpigotOfflinePlayer( oPlayer ) );
+		} 
+		catch (Exception e) {
+			Output.get().logWarn( "SpigotPlatform.getOfflinePlayer(name) failed (is deprecated): " + e.getMessage() );
+		}
+    	
+    	return Optional.ofNullable( player );
+    	
+//    	return getOfflinePlayer(name, null);
     }
     
     @Override
     public Optional<Player> getOfflinePlayer(UUID uuid) {
-    	return getOfflinePlayer(null, uuid);
+    	
+    	OfflinePlayer oPlayer = Bukkit.getOfflinePlayer( uuid );
+		Player player = (oPlayer == null ? null : new SpigotOfflinePlayer( oPlayer ) );
+    	
+		return Optional.ofNullable( player );
+		
+//    	return getOfflinePlayer(null, uuid);
     }
     
+    
+    /**
+     * <p>This function will return all players that are setup in prison.
+     * This function cannot use bukkit's getOffLinePlayers() because for
+     * servers with a lot of players, that will force bukkit to read a ton
+     * of files, which will lag the server big time.
+     * </p>
+     * 
+     * <p>Using the PlayerManger to get the registered players makes the most
+     * sense.
+     * </p>
+     * 
+     */
 	@Override
     public List<Player> getOfflinePlayers() {
     	List<Player> players = new ArrayList<>();
     	
-    	for ( OfflinePlayer oPlayer : Bukkit.getOfflinePlayers() ) {
-			if ( oPlayer != null ) {
-				
-				players.add( new SpigotOfflinePlayer( oPlayer ) );
+    	if ( PrisonRanks.getInstance() != null && PrisonRanks.getInstance().isEnabled() ) {
+			PlayerManager pm = PrisonRanks.getInstance().getPlayerManager();
+			
+			for ( RankPlayer rPlayer : pm.getPlayers() ) {
+				players.add(rPlayer);
 			}
-    	}
+			
+		}
+    	
+    	
+//    	for ( OfflinePlayer oPlayer : Bukkit.getOfflinePlayers() ) {
+//			if ( oPlayer != null ) {
+//				
+//				players.add( new SpigotOfflinePlayer( oPlayer ) );
+//			}
+//    	}
     	
     	return players;
     }
     
-    private Optional<Player> getOfflinePlayer(String name, UUID uuid) {
-    	Player player = null;
-    	
-    	if ( uuid != null ) {
-    		OfflinePlayer oPlayer = Bukkit.getOfflinePlayer( uuid );
-    		player = (oPlayer == null ? null : new SpigotOfflinePlayer( oPlayer ) );
-    		
-    	}
-    	
-    	if ( player == null && name != null && name.trim().length() > 0 ) {
-    		
-    		// No hits on uuid so only compare names:
-    		for ( OfflinePlayer oPlayer : Bukkit.getOfflinePlayers() ) {
-    			if ( oPlayer != null && oPlayer.getName() != null && 
-    					oPlayer.getName().equalsIgnoreCase( name.trim() ) ) {
-    				
-    				player = new SpigotOfflinePlayer( oPlayer );
-    				break;
-    			}
-    			else if ( oPlayer == null || oPlayer.getName() == null ) {
-    				Output.get().logWarn( "SpigotPlatform.getOfflinePlayer: Bukkit return a " +
-    						"bad player: OfflinePlayer == null? " + (oPlayer == null) + 
-    						( oPlayer == null ? "" : 
-    							"  name= " + (oPlayer.getName() == null ? "null" : 
-    								oPlayer.getName())));
-    				
-    			}
-    		}
-    	}
-    	
-    	// If player is not available, then try to get a RankPlayer instance of the player:
-    	if ( player == null ) {
-    		if ( PrisonRanks.getInstance() != null && PrisonRanks.getInstance().isEnabled() ) {
-    			PlayerManager pm = PrisonRanks.getInstance().getPlayerManager();
-    			
-    			RankPlayer rankPlayer = pm.getPlayer( uuid, name );
-    			if ( rankPlayer != null ) {
-    				if ( uuid != null && rankPlayer.getUUID().equals( uuid ) || 
-    					 uuid == null && name != null && rankPlayer.getName() != null && 
-    						rankPlayer.getName().equalsIgnoreCase( name )) {
-    					
-    					player = rankPlayer;
-    				}
-    			}
-    		}
-    	}
-    	
-    	return Optional.ofNullable( player );
-    	
-    	
-//    	for ( OfflinePlayer offP : Bukkit.getOfflinePlayers() ) {
-//    		if ( name != null && offP.getName().equalsIgnoreCase( name) ||
-//					  uuid != null && offP.getUniqueId().equals(uuid) ) {
-//    			
-//	// ### getting the offline bukkit player here!
-//    			player = new SpigotOfflinePlayer( offP );
-//	  			players.add(player);
-//	              break;
-//	  		}
+//    private Optional<Player> getOfflinePlayer(String name, UUID uuid) {
+//    	Player player = null;
+//    
+//    	if ( PrisonRanks.getInstance() != null && PrisonRanks.getInstance().isEnabled() ) {
+//			PlayerManager pm = PrisonRanks.getInstance().getPlayerManager();
+//			
+//			player = pm.getPlayer( uuid, name );
+//			
 //		}
+//
 //    	
-//    	List<OfflinePlayer> olPlayers = Arrays.asList( Bukkit.getOfflinePlayers() );
-//    	for ( OfflinePlayer offlinePlayer : olPlayers ) {
-//    		if ( name != null && offlinePlayer.getName().equals(name) ||
-//					  uuid != null && offlinePlayer.getUniqueId().equals(uuid) ) {
-//    			player = new SpigotPlayer(offlinePlayer.getPlayer());
-//    			players.add(player);
-//                break;
-//    		}
-//		}
+////    	if ( uuid != null ) {
+////    		OfflinePlayer oPlayer = Bukkit.getOfflinePlayer( uuid );
+////    		player = (oPlayer == null ? null : new SpigotOfflinePlayer( oPlayer ) );
+////    		
+////    	}
+////    	
+////    	if ( player == null && name != null && name.trim().length() > 0 ) {
+////    		
+////    		// No hits on uuid so only compare names:
+////    		for ( OfflinePlayer oPlayer : Bukkit.getOfflinePlayers() ) {
+////    			if ( oPlayer != null && oPlayer.getName() != null && 
+////    					oPlayer.getName().equalsIgnoreCase( name.trim() ) ) {
+////    				
+////    				player = new SpigotOfflinePlayer( oPlayer );
+////    				break;
+////    			}
+////    			else if ( oPlayer == null || oPlayer.getName() == null ) {
+////    				Output.get().logWarn( "SpigotPlatform.getOfflinePlayer: Bukkit return a " +
+////    						"bad player: OfflinePlayer == null? " + (oPlayer == null) + 
+////    						( oPlayer == null ? "" : 
+////    							"  name= " + (oPlayer.getName() == null ? "null" : 
+////    								oPlayer.getName())));
+////    				
+////    			}
+////    		}
+////    	}
+////    	
+////    	// If player is not available, then try to get a RankPlayer instance of the player:
+////    	if ( player == null ) {
+////    		if ( PrisonRanks.getInstance() != null && PrisonRanks.getInstance().isEnabled() ) {
+////    			PlayerManager pm = PrisonRanks.getInstance().getPlayerManager();
+////    			
+////    			RankPlayer rankPlayer = pm.getPlayer( uuid, name );
+////    			if ( rankPlayer != null ) {
+////    				if ( uuid != null && rankPlayer.getUUID().equals( uuid ) || 
+////    					 uuid == null && name != null && rankPlayer.getName() != null && 
+////    						rankPlayer.getName().equalsIgnoreCase( name )) {
+////    					
+////    					player = rankPlayer;
+////    				}
+////    			}
+////    		}
+////    	}
+//    	
 //    	return Optional.ofNullable( player );
-    }
+//    	
+//    	
+////    	for ( OfflinePlayer offP : Bukkit.getOfflinePlayers() ) {
+////    		if ( name != null && offP.getName().equalsIgnoreCase( name) ||
+////					  uuid != null && offP.getUniqueId().equals(uuid) ) {
+////    			
+////	// ### getting the offline bukkit player here!
+////    			player = new SpigotOfflinePlayer( offP );
+////	  			players.add(player);
+////	              break;
+////	  		}
+////		}
+////    	
+////    	List<OfflinePlayer> olPlayers = Arrays.asList( Bukkit.getOfflinePlayers() );
+////    	for ( OfflinePlayer offlinePlayer : olPlayers ) {
+////    		if ( name != null && offlinePlayer.getName().equals(name) ||
+////					  uuid != null && offlinePlayer.getUniqueId().equals(uuid) ) {
+////    			player = new SpigotPlayer(offlinePlayer.getPlayer());
+////    			players.add(player);
+////                break;
+////    		}
+////		}
+////    	return Optional.ofNullable( player );
+//    }
     
     @Override public String getPluginVersion() {
         return plugin.getDescription().getVersion();

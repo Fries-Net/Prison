@@ -70,6 +70,8 @@ public class PlayerManager
 
     private Collection collection;
     private List<RankPlayer> players;
+    
+    // NOTE: playersByName is indexed by both the player's name, and their UUID.
     private TreeMap<String, RankPlayer> playersByName;
     
     
@@ -142,6 +144,9 @@ public class PlayerManager
             // add by name:
             if ( rankPlayer.getNames().size() > 0 ) {
             	playersByName.put( rankPlayer.getDisplayName(), rankPlayer );
+            	
+            	// add lowercased name:
+            	playersByName.put( rankPlayer.getDisplayName().toLowerCase(), rankPlayer );
             	
             }
             
@@ -303,32 +308,52 @@ public class PlayerManager
     	if ( !playerName.isEmpty() && getPlayersByName().containsKey( playerName ) ) {
     		results = getPlayersByName().get( playerName );
     	}
-    	
-    	if ( results == null ) {
-    		
-    		// Debug info on player when results are null from the first "search".
-    		debugLogPlayerInfo( "getPlayer(): UUID check (could not match on playerName):", playerName, 
-    							uid == null ? "none" : uid.toString(), false );
-    		
-    		for ( RankPlayer rankPlayer : players ) {
-    			if ( uid != null && rankPlayer.getUUID().equals(uid) || 
-    					
-    				!playerName.isEmpty() &&
-    					rankPlayer.getName() != null &&
-    					rankPlayer.getName().equalsIgnoreCase( playerName ) ) {
-    				
-    				// This checks to see if they have a new name, if so, then adds it to the history:
-    				// But the UID must match:
-    				if ( uid != null && rankPlayer.getUUID().equals(uid) ) {
-    					rankPlayer.setEnableDirty( true );
-    					rankPlayer.setDirty( rankPlayer.checkName( playerName ) );
-    				}
-    				
-    				results = rankPlayer;
-    				break;
-    			}
-    		}
+    	else if ( !playerName.isEmpty() && getPlayersByName().containsKey( playerName.toLowerCase() ) ) {
+    		results = getPlayersByName().get( playerName.toLowerCase() );
     	}
+    	else if ( uid != null && getPlayersByName().containsKey( uid.toString() ) ) {
+			results = getPlayersByName().get( uid.toString() );
+			
+			if ( results != null ) {
+				// There was probably a name change since it did not hit on the player's name, 
+				// so update the name history:
+				
+				// This checks to see if they have a new name, if so, then adds it to the history:
+				// But the UID must match:
+				if ( uid != null && results.getUUID().equals(uid) ) {
+					results.setEnableDirty( true );
+					results.setDirty( results.checkName( playerName ) );
+				}
+			}
+		}
+
+    	
+//    	// If we don't have the player by name or UUID, we can only check 
+//    	if ( results == null ) {
+//    		
+//    		// Debug info on player when results are null from the first "search".
+//    		debugLogPlayerInfo( "getPlayer(): UUID check (could not match on playerName):", playerName, 
+//    							uid == null ? "none" : uid.toString(), false );
+//    		
+//    		for ( RankPlayer rankPlayer : players ) {
+//    			if ( uid != null && rankPlayer.getUUID().equals(uid) || 
+//    					
+//    				!playerName.isEmpty() &&
+//    					rankPlayer.getName() != null &&
+//    					rankPlayer.getName().equalsIgnoreCase( playerName ) ) {
+//    				
+//    				// This checks to see if they have a new name, if so, then adds it to the history:
+//    				// But the UID must match:
+//    				if ( uid != null && rankPlayer.getUUID().equals(uid) ) {
+//    					rankPlayer.setEnableDirty( true );
+//    					rankPlayer.setDirty( rankPlayer.checkName( playerName ) );
+//    				}
+//    				
+//    				results = rankPlayer;
+//    				break;
+//    			}
+//    		}
+//    	}
     	
 //    	Optional<RankPlayer> results = players.stream().filter(
 //    			player -> (uid != null ? 
@@ -336,7 +361,9 @@ public class PlayerManager
 //    						( playerName != null || playerName.trim().length() == 0 ? false :
 //    							player.checkName( playerName )))).findFirst();
     	
-    	if ( results == null && playerName != null && !"console".equalsIgnoreCase( playerName ) ) {
+    	if ( results == null && uid != null && playerName != null && !"console".equalsIgnoreCase( playerName ) ) {
+    		
+    		// Player's uuid and name cannot be null if they are being added as a new prison player:
     		
     		debugLogPlayerInfo( "getPlayer(): addPlayer (final attempt: could not match on playerName or UUID):", 
     						playerName, uid == null ? "none" : uid.toString(), false );
@@ -387,7 +414,9 @@ public class PlayerManager
     	if ( PrisonTaskSubmitter.isPrimaryThread() ) {
     		results = addPlayerSyncTask( uid, playerName );
     	}
-    	else if ( !getPlayersByName().containsKey( playerName )) {
+    	else if ( !getPlayersByName().containsKey( playerName ) && 
+    			!getPlayersByName().containsKey( playerName.toLowerCase() ) 
+    			) {
     		
     		// Submit the sync task to add player.  But since this is an 
     		// async thread, we can only return a null.  Future requests
@@ -407,14 +436,16 @@ public class PlayerManager
         
         if ( uid != null && playerName != null && 
         		playerName.trim().length() > 0 && !"CONSOLE".equalsIgnoreCase( playerName ) &&
-        		!getPlayersByName().containsKey( playerName )) {
+        		!getPlayersByName().containsKey( playerName ) && 
+        		!getPlayersByName().containsKey( playerName.toLowerCase() ) ) {
         	
         	synchronized( getPlayersByName() ) {
         		
         		// recheck to ensure that the player's name is not in the getPlayersByName()
         		// collection... it could have been added since submitting the sync task:
         		
-        		if ( !getPlayersByName().containsKey( playerName ) ) {
+        		if ( !getPlayersByName().containsKey( playerName ) && 
+        				!getPlayersByName().containsKey( playerName.toLowerCase() ) ) {
         			
         			RankPlayerFactory rankPlayerFactory = new RankPlayerFactory();
         			
@@ -428,6 +459,8 @@ public class PlayerManager
         			
         			players.add(newPlayer);
         			getPlayersByName().put( playerName, newPlayer );
+        			getPlayersByName().put( playerName.toLowerCase(), newPlayer );
+        			getPlayersByName().put( uid.toString(), newPlayer );
 
         			
         			debugLogPlayerInfo( "addPlayerSyncTask: firstJoin:", playerName, 
@@ -488,7 +521,9 @@ public class PlayerManager
     	
     	if ( Output.get().isDebug() ) {
     		
-    		boolean newPlayer =  playerName != null ? !getPlayersByName().containsKey( playerName ) : false;
+    		boolean newPlayer =  playerName != null ?
+    				!getPlayersByName().containsKey( playerName ) && 
+    					!getPlayersByName().containsKey( playerName.toLowerCase() ) : false;
     		
     		if ( playerName == null ) {
     			playerName = "**Error No player name**";

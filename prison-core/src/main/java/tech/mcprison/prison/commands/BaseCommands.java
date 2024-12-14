@@ -56,21 +56,31 @@ public abstract class BaseCommands
 			playerName = sender.getName();
 		}
 		
-		if ( playerName != null ) {
-			Optional<Player> opt = Prison.get().getPlatform().getPlayer( playerName );
-			if ( !opt.isPresent() ) {
-				opt = Prison.get().getPlatform().getOfflinePlayer( playerName );
-			}
-			if ( opt.isPresent() ) {
-				result = opt.get();
-			}
-		}
-		if ( result == null && uuid != null ) {
-			Optional<Player> opt = Prison.get().getPlatform().getOfflinePlayer( uuid );
-			if ( opt.isPresent() ) {
-				result = opt.get();
-			}
-		}
+		result = Prison.get().getPlatform().getRankPlayer( uuid, playerName );
+
+		
+//		if ( playerName != null ) {
+//			Optional<Player> opt = Prison.get().getPlatform().getPlayer( playerName );
+//			
+//			result = opt.orElse( null );
+//			
+////			if ( !opt.isPresent() ) {
+////				opt = Prison.get().getPlatform().getOfflinePlayer( playerName );
+////			}
+////			if ( opt.isPresent() ) {
+////				result = opt.get();
+////			}
+//		}
+//		if ( result == null && uuid != null ) {
+//			
+////			result = Prison.get().getPlatform().getRankPlayer( uuid, playerName );
+//			
+////			Optional<Player> opt = Prison.get().getPlatform().getOfflinePlayer( uuid );
+////			if ( opt.isPresent() ) {
+////				result = opt.get();
+////			}
+//		}
+		
 		
 //		playerName = playerName != null && !playerName.trim().isEmpty() ? 
 //								playerName : sender != null ? sender.getName() : null;

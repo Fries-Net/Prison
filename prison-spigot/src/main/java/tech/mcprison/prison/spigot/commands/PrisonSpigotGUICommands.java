@@ -43,19 +43,21 @@ public class PrisonSpigotGUICommands extends PrisonSpigotBaseCommands {
 
         Player player = getSpigotPlayer(sender);
 
-        if (player == null) {
-            Output.get().sendInfo(sender, SpigotPrison.format( getMessages().getString(MessagesConfig.StringID.spigot_message_console_error)));
-            return;
-        }
+//        if (player == null) {
+//            Output.get().sendInfo(sender, SpigotPrison.format( getMessages().getString(MessagesConfig.StringID.spigot_message_console_error)));
+//            return;
+//        }
 
-        if (player.hasPermission("prison.admin")) {
+        if (player != null && player.hasPermission("prison.admin")) {
             SpigotPrisonGUI gui = new SpigotPrisonGUI(player);
             gui.open();
             return;
         }
         
         // If the player will be shown the /gui help, then force close any open inventory:
-        player.closeInventory();
+        if (player != null ) {
+        	player.closeInventory();
+        }
 
         sender.dispatchCommand("gui help");
     }

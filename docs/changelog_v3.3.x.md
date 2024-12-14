@@ -17,6 +17,19 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19d 2024-10-11
 
 
+2024-12-14
+
+* **Prison was gifted over 46,000 players!!!** 
+Someone who was running in to performance issues with prison on a large server, gifted me over 46,000 players in both prison and in bukkit.  Now I can perform various testing with larger player bases to help fix and prevent performance issues.
+
+
+* **Major Prison performance cleanup:** When there are a few thousand players on the server and in prison, prison was running in to major performance issues that was basically killing the performance of the server.
+One major cause was with the startup routine of trying to add players that are on the server, but not in prison.  This could run for literally days and consume tons of processing resources.  So prison no longer tries to pre-add any player.  They have to join the server to be added.
+The other major problem, was that if prison was trying to lookup a player that was not online, it would hit bukkit's offline players, and it would get a full list of all offline players.  This was horrible!  Bukkit would have to read all player files to generate the offline players listing, which could take a long time.  For example, with 46,000 players, it could take a few minutes for bukkit to fully load all players, and during that time, paper starts generating tons of warnings stating the server is not responding correctly.  It does not kill the server, but it generates mega bytes of errors in the log files.
+So to fix this problem, prison no longer uses the bukkit offline player's functions unless trying to access ONE offline player using strictly their UUID.  A name search would require almost all files to be searched too.
+As a result, prison is far more stable for very large player bases on servers!!  This is a major improvement.  In the past there has been complaints about prison when there were a lot of players, but I was never able to zero in on the problem since no one was really willing to work with me on figuring this out.  What helped a lot was being gifted over 46,000 players. :)  So now I can do some serious testing with many players.
+
+
 * **Rankup:  would not work for ladders other than default and prestiges.  Fixed.**
 
 
