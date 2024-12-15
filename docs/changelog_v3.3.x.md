@@ -14,7 +14,10 @@
 These change logs represent the work that has been going on within prison. 
 
 
-# 3.3.0-alpha.19d 2024-10-11
+# 3.3.0-alpha.19d 2024-12-14
+
+
+* **Doc updates: Provide more information on '/mines set resetThreshold' and the new command '/mines debugBlockBreak'.**
 
 
 * **Mines: Debug block breakage.  Created a new command '/mines debugBlockBreak` that will now be able to use tools from other plugins.**
