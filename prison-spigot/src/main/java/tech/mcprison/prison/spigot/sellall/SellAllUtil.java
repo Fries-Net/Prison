@@ -144,8 +144,13 @@ public class SellAllUtil
         permissionAutoSellPerUserToggleable = sellAllConfig.getString("Options.Full_Inv_AutoSell_PerUserToggleable_Permission");
         permissionItemTrigger = sellAllConfig.getString("Options.ShiftAndRightClickSellAll.Permission");
         sellAllCurrency = sellAllConfig.getString("Options.SellAll_Currency");
+        
+//        sellAllSoundSuccess = XSound.matchXSound("Options.Sell_Sound_Success_Name").orElse(XSound.ENTITY_PLAYER_LEVELUP).get();
         sellAllSoundSuccess = XSound.matchXSound("Options.Sell_Sound_Success_Name").orElse(XSound.ENTITY_PLAYER_LEVELUP).parseSound();
+        
+//        sellAllSoundFail = XSound.matchXSound("Options.Sell_Sound_Fail_Name").orElse(XSound.BLOCK_ANVIL_PLACE).get();
         sellAllSoundFail = XSound.matchXSound("Options.Sell_Sound_Fail_Name").orElse(XSound.BLOCK_ANVIL_PLACE).parseSound();
+        
         sellAllSignTag = Text.translateAmpColorCodes(sellAllConfig.getString("Options.SellAll_Sign_Visible_Tag") );
 //        sellAllBlocks = initSellAllBlocks();
         sellAllItems = initSellAllItems();

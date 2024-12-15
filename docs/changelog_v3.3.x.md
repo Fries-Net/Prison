@@ -14,7 +14,10 @@
 These change logs represent the work that has been going on within prison. 
 
 
-# 3.3.0-alpha.19d 2024-12-14
+# 3.3.0-alpha.19e 2024-12-14
+
+
+### Version 3.3.0-alpha.19e  2024-12-14
 
 
 * **Updated nbtApi from v2.13.2 to v2.14.0.  This should provide better support for spigot 1.21.4.**
@@ -93,7 +96,7 @@ SpigotPlayer: Using bukkit's block.isPassable() on getLineOfSight(), but may nee
 It was not clear why mine bombs were not working.
 
 
-** 3.3.0-alpha.19d 2024-09-26**
+### 3.3.0-alpha.19d 2024-09-26**
 
 
 * **Prison blocks: It was realized that due to a recent expansion of the items that are included in the default for sellall, that the first 27 or so entries, were the blocks that were used in the auto generated mines when running the command '/ranks autoConfigure'.**
