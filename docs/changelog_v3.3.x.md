@@ -17,6 +17,12 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19d 2024-12-14
 
 
+* **Updated nbtApi from v2.13.2 to v2.14.0.  This should provide better support for spigot 1.21.4.**
+
+Tried to update XSeries to v12.0.0 but it failed.  It does not appear to work with spigot v1.13.2, which is the version which prison uses for building it's jars.  Will have to figure this out later, maybe their release v12.1.0 will address these issues.
+
+
+
 * **Doc updates: Provide more information on '/mines set resetThreshold' and the new command '/mines debugBlockBreak'.**
 
 
