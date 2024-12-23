@@ -200,11 +200,12 @@ public class SpigotUtil {
 		return iStack;
 	}
 	
-	public static void getSpigotBlock( ItemStack iStack ) {
-		//XMaterial xmat = XMaterial.matchXMaterial( iStack );
-		
-//		SpigotCompatibility.getInstance().
-	}
+	
+//	public static void getSpigotBlock( ItemStack iStack ) {
+//		//XMaterial xmat = XMaterial.matchXMaterial( iStack );
+//		
+////		SpigotCompatibility.getInstance().
+//	}
 	
 
 	/*public static HashMap<Integer, SpigotItemStack> addItemToPlayerInventory(

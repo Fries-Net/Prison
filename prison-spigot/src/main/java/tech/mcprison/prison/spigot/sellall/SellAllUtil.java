@@ -1206,6 +1206,7 @@ public class SellAllUtil
     	return soldItem;
     }
     
+    
     public PrisonBlock getSellallItem( PrisonBlock block ) {
     	
     	PrisonBlock pBlockSellAll = sellAllItems.get( block.getBlockNameSearch() );
@@ -1550,6 +1551,17 @@ public class SellAllUtil
             String itemID = sellAllConfig.getString( itemPrefix + ".ITEM_ID");
 
             PrisonBlock pBlock = Prison.get().getPlatform().getPrisonBlock(itemID);
+            
+            if ( pBlock == null ) {
+            	// create a prison block for this sellall item:
+            	pBlock = new PrisonBlock( key.trim().toLowerCase() );
+            	
+            	// Add it:
+            	List<PrisonBlock> newBlockTypes = new ArrayList<>();
+            	newBlockTypes.add( pBlock );
+            	Prison.get().getPlatform().getPrisonBlockTypes().addBlockTypes( newBlockTypes );
+            	
+            }
 
             if ( pBlock != null ) {
             	
@@ -1574,7 +1586,8 @@ public class SellAllUtil
             		try {
             			double value = Double.parseDouble(purchaseValueString);
             			pBlock.setPurchasePrice( value );
-            		} catch (NumberFormatException ignored) {
+            		} 
+            		catch (NumberFormatException ignored) {
             		}
             	}
             	
@@ -1680,6 +1693,17 @@ public class SellAllUtil
     	return addSellAllBlock( xMaterial, null, value );
     }
     
+    /**
+     * <p>Note: This function was flawed (now fixed).  When searching for the sellall item, it uses the 
+     * 'getBlockNameSearch()' which includes the displayName, but when setting the sellall 
+     * item, it ignores the displayName.
+     * </p>
+     * 
+     * @param xMaterial
+     * @param displayName
+     * @param value
+     * @return
+     */
     public boolean addSellAllBlock(XMaterial xMaterial, String displayName, double value) {
     	
     	PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( xMaterial.name() );
@@ -1687,6 +1711,12 @@ public class SellAllUtil
     		Output.get().logDebug( "sellall add: invalid block name (%s)", xMaterial.name());
     		return false;
     	}
+    	
+    	// Add the displayName to the block on it can be properly setup in sellall:
+    	if ( displayName != null && displayName.trim().length() > 0 ) {
+    		pBlockKey.setDisplayName( displayName );
+    	}
+    	
     	String key = pBlockKey.getBlockNameSearch();
 //    	String key = pBlockKey.getBlockName().toLowerCase();
     	
@@ -1734,6 +1764,82 @@ public class SellAllUtil
         
 //        sellAllBlocks.put(xMaterial, value);
         return true;
+    }
+    
+    /**
+     * 
+     * <p>Warning: use with caution since this does not validate against XMaterial.
+     * </p>
+     * 
+     * <p>Note: This function was flawed (now fixed).  When searching for the sellall item, it uses the 
+     * 'getBlockNameSearch()' which includes the displayName, but when setting the sellall 
+     * item, it ignores the displayName.
+     * </p>
+     * 
+     * @param xMaterial
+     * @param displayName
+     * @param value
+     * @return
+     */
+    public boolean addSellAllBlock( String itemNameSearch, double value, PrisonBlock pBlock ) {
+    	
+    	PrisonBlock pBlockSellall = sellAllItems.get( itemNameSearch );
+    	
+    	// If that is an invalid PrisonBlock, then exit
+    	if ( pBlockSellall != null ) {
+    		Output.get().logDebug( "sellall add: block already exists (%s)", itemNameSearch );
+    		return false;
+    	}
+    	
+    	
+    	// pBlock is null, but it's being used below. So clone the key:
+//    	pBlock = pBlockKey.clone();
+    	
+    	try {
+    		
+    		String itemName = itemNameSearch.toUpperCase();
+    		String displayName = pBlock.getDisplayName();
+
+    		
+    		File sellAllFile = new File(SpigotPrison.getInstance().getDataFolder() + "/SellAllConfig.yml");
+    		FileConfiguration conf = YamlConfiguration.loadConfiguration(sellAllFile);
+    		
+    		conf.set("Items." + itemName + ".ITEM_ID", itemNameSearch );
+    		conf.set("Items." + itemName + ".ITEM_VALUE", value);
+    		conf.set("Items." + itemName + ".IS_LORE_ALLOWED", pBlock.isLoreAllowed() );
+    		
+    		if ( displayName != null ) {
+    			conf.set("Items." + itemName + ".ITEM_DISPLAY_NAME", displayName );
+    		}
+    		
+    		if (getBooleanValue("Options.Sell_Per_Block_Permission_Enabled")) {
+    			String itemPerm = "Items." + itemName + ".ITEM_PERMISSION";
+    			conf.set( itemPerm, sellAllConfig.getString("Options.Sell_Per_Block_Permission") + itemNameSearch );
+    		}
+    		conf.save(sellAllFile);
+    		updateConfig();
+    		
+    		pBlock.setSalePrice( value );
+
+    		PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( itemNameSearch );
+    		if ( pBlockKey == null ) {
+    			List<PrisonBlock> pbList = new ArrayList<>();
+    			
+    			pbList.add( pBlock );
+    			
+    			Prison.get().getPlatform().getPrisonBlockTypes().addBlockTypes( pbList );
+    		}
+    		
+    		sellAllItems.put( itemNameSearch, pBlock );
+    		
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    		return false;
+    	}
+    	
+    	
+//        sellAllBlocks.put(xMaterial, value);
+    	return true;
     }
 
 //    /**
@@ -2100,22 +2206,23 @@ public class SellAllUtil
     }
     
     
-    public boolean editAllowLore(XMaterial xMaterial, boolean value) {
+    public boolean editAllowLore( PrisonBlock pBlock, boolean value) {
+//    	public boolean editAllowLore(XMaterial xMaterial, boolean value) {
     	
-    	PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( xMaterial.name() );
-    	String key = pBlockKey.getBlockNameSearch();
+//    	PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( xMaterial.name() );
+//    	String key = pBlockKey.getBlockNameSearch();
     	
-    	PrisonBlock pBlock = sellAllItems.get( key );
+//    	PrisonBlock pBlock = sellAllItems.get( key );
     	
     	// Do not allow an edit price if the material does not exist, or if the value has not changed:
-    	if ( pBlock == null ){
+    	if ( sellAllItems.get(pBlock.getBlockNameSearch() ) == null ){
     		
-    		Output.get().logDebug( "sellall edit: item does not exist in shop so it cannot be edited (%s)", pBlockKey.getBlockName());
+    		Output.get().logDebug( "sellall edit: item does not exist in shop so it cannot be edited (%s)", pBlock.getBlockName() );
     		return false;
     	}
     	if ( pBlock.isLoreAllowed() == value ){
     		Output.get().logDebug( "sellall edit: No change in 'allow lore' (%s %s)", 
-    				pBlockKey.getBlockName(), Boolean.toString( pBlock.isLoreAllowed() ) );
+    				pBlock.getBlockName(), Boolean.toString( pBlock.isLoreAllowed() ) );
     		return false;
     	}
     	
@@ -2125,7 +2232,7 @@ public class SellAllUtil
     		File sellAllFile = new File(SpigotPrison.getInstance().getDataFolder() + "/SellAllConfig.yml");
     		FileConfiguration conf = YamlConfiguration.loadConfiguration(sellAllFile);
     		
-    		String itemName = key.toUpperCase();
+    		String itemName = pBlock.getBlockNameSearch().toUpperCase();
 //    		conf.set("Items." + itemName + ".ITEM_ID", key );
     		conf.set("Items." + itemName + ".IS_LORE_ALLOWED", pBlock.isLoreAllowed() );
     		

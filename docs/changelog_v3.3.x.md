@@ -17,6 +17,12 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19e 2024-12-22
 
 
+* **Sellall: Much better support for blocks with custom names.**  Both for rejecting the wrong blocks, but also for now being able to sell them.
+These changes are not perfect  and does not support some conditions.
+Prison currently does not support multiple custom blocks with the same material types and the same display name.
+These blocks that are added through sellall should never be used within mines because prison cannot create those blocks to place in the mines.
+New command:  '/sellall addHand'.  Improved a few other commands too such as '/sellall list' and '/sellall items inspect'.
+
 
 * **PrisonBlock:  Significant modifications to support non-prison blocks for sellall.**
 The alters many behaviors to allow for almost any dynamic custom block name, outside of the supported custom items.
