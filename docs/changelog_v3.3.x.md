@@ -14,7 +14,15 @@
 These change logs represent the work that has been going on within prison. 
 
 
-# 3.3.0-alpha.19e 2024-12-14
+# 3.3.0-alpha.19e 2024-12-22
+
+
+
+* **PrisonBlock:  Significant modifications to support non-prison blocks for sellall.**
+The alters many behaviors to allow for almost any dynamic custom block name, outside of the supported custom items.
+Created constants for the selection wand, both for the PrisonBlock and the item stack.
+These changes will support sellall's use of more dynamic block names that are not within prison.  If it is a custom block name, then it will be added to prison's list of blocks.  These should not be used in mines since prison cannot generate them faithfully.
+
 
 
 ### Version 3.3.0-alpha.19e  2024-12-14

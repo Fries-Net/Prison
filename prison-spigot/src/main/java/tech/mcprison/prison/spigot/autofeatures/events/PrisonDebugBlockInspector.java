@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.bukkit.event.EventException;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.RegisteredListener;
 
 import com.cryptomorin.xseries.XMaterial;
@@ -18,7 +17,6 @@ import tech.mcprison.prison.internal.block.MineTargetPrisonBlock;
 import tech.mcprison.prison.internal.events.player.PrisonPlayerInteractEvent;
 import tech.mcprison.prison.mines.data.Mine;
 import tech.mcprison.prison.output.Output;
-import tech.mcprison.prison.selection.SelectionManager;
 import tech.mcprison.prison.spigot.block.OnBlockBreakMines;
 import tech.mcprison.prison.spigot.block.SpigotBlock;
 import tech.mcprison.prison.spigot.block.SpigotItemStack;
@@ -112,9 +110,11 @@ public class PrisonDebugBlockInspector
     	this.lastAccess = System.currentTimeMillis();
     	
         ItemStack ourItem = e.getItemInHand();
-        ItemStack toolItem = SelectionManager.SELECTION_TOOL;
+        ItemStack toolItem = ItemStack.SELECTION_WAND;
+//        ItemStack toolItem = SelectionManager.SELECTION_TOOL;
 
-        if ( ourItem == null || !ourItem.equals(toolItem) || !Output.get().isDebug() ) {
+        if ( ourItem == null || ourItem.getMaterial().compareTo(toolItem.getMaterial()) != 0 || 
+        		!Output.get().isDebug() ) {
             return;
         }
         //e.setCanceled(true);
@@ -328,9 +328,10 @@ public class PrisonDebugBlockInspector
 //    	boolean isWood = blockName.matches( "wood|log|planks|sapling" );
     	
     	ItemStack ourItem = new SpigotItemStack( heldItem );
-        ItemStack toolItem = SelectionManager.SELECTION_TOOL;
+        ItemStack toolItem = ItemStack.SELECTION_WAND;
+//        ItemStack toolItem = SelectionManager.SELECTION_TOOL;
     	
-    	boolean isMineWand = ourItem != null && ourItem.equals(toolItem);
+    	boolean isMineWand = ourItem != null && ourItem.getMaterial().compareTo(toolItem.getMaterial()) == 0;
     	
     	// If what is being held is not a mine wand, then use what is being held:
     	SpigotItemStack tool = 

@@ -59,7 +59,8 @@ public class SelectionTest {
         World ourWorld = new TestWorld("TestWorld");
         TestPlayer ourPlayer = new TestPlayer();
 
-        ItemStack coloredToolItemStack = SelectionManager.SELECTION_TOOL;
+        ItemStack coloredToolItemStack = ItemStack.SELECTION_WAND;
+//        ItemStack coloredToolItemStack = SelectionManager.SELECTION_TOOL;
         coloredToolItemStack
             .setDisplayName(Text.translateAmpColorCodes(coloredToolItemStack.getDisplayName()));
 

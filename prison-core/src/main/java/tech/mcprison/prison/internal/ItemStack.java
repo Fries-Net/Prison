@@ -41,6 +41,13 @@ public class ItemStack {
     private List<String> lore;
 //    private Map<Integer, Integer> enchantments;
 
+    public static final ItemStack SELECTION_WAND;
+    
+    static {
+    	SELECTION_WAND = new ItemStack( 1, PrisonBlock.SELECTION_WAND, 
+				"&7Corner 1 - Left click",
+	            "&7Corner 2 - Right click");
+    }
     
     /**
      * Do not use this constructor, it is for unit testing.
@@ -55,8 +62,13 @@ public class ItemStack {
     public ItemStack(String displayName, int amount, PrisonBlock material, String... lore) {
         this.displayName = displayName;
         this.amount = amount;
-        this.material = material;
+        this.material = material.clone();
         this.lore = new ArrayList<>(Arrays.asList(lore));
+        
+        if ( displayName != null && displayName.trim().length() > 0 ) {
+        	this.material.setDisplayName( displayName.trim() );
+        }
+        
 //        this.enchantments = new HashMap<>();
     }
 
@@ -64,6 +76,10 @@ public class ItemStack {
         this.amount = amount;
         this.material = material;
         this.lore = new ArrayList<>(Arrays.asList(lore));
+        
+        if ( material.getDisplayName() != null && material.getDisplayName().trim().length() > 0 ) {
+        	setDisplayName( material.getDisplayName() );
+        }
     }
 
     public ItemStack( ItemStack iStack ) {
@@ -71,6 +87,10 @@ public class ItemStack {
     	this.amount = iStack.getAmount();
     	this.material = iStack.getMaterial().clone();
     	this.lore = new ArrayList<>( iStack.getLore() );
+        
+        if ( displayName != null && displayName.trim().length() > 0 ) {
+        	this.material.setDisplayName( displayName.trim() );
+        }
     }
     
     /**
@@ -114,6 +134,16 @@ public class ItemStack {
     public void setMaterial( PrisonBlock material ) {
 		this.material = material;
 	}
+    
+    /**
+     * <p>The material for an item stack is the PrisonBlock.
+     * </p>
+     * 
+     * @return
+     */
+    public PrisonBlock getPrisonBlock() {
+    	return getMaterial();
+    }
 
 	public List<String> getLore() {
         return lore;
