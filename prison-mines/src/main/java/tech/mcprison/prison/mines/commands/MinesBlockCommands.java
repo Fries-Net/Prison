@@ -70,6 +70,12 @@ public class MinesBlockCommands
         	return;
         }
         
+        if ( prisonBlock.isSellallOnly() ) {
+        	pMines.getMinesMessages().getLocalizable("not_a_block_sellall").
+        	withReplacements(block).sendTo(sender);
+        	return;
+        }
+        
         if ( !prisonBlock.isBlock() ) {
         	pMines.getMinesMessages().getLocalizable("not_a_block").
         	withReplacements(block).sendTo(sender);

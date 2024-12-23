@@ -40,6 +40,7 @@ public class PrisonBlock
 	
 	private boolean valid = true;
 	private boolean block = true;
+	private boolean sellallOnly = false;
 	
 	private boolean legacyBlock = false;
 	
@@ -150,6 +151,8 @@ public class PrisonBlock
 		this.useBlockTypeAsPrefix = clonable.isUseBlockTypeAsPrefix();
 		this.valid = clonable.isValid();
 		this.block = clonable.isBlock();
+		this.sellallOnly = clonable.isSellallOnly();
+		
 		this.legacyBlock = clonable.isLegacyBlock();
 		
 		this.setLoreAllowed( clonable.isLoreAllowed() );
@@ -340,6 +343,25 @@ public class PrisonBlock
 		this.block = isBlock;
 	}
 
+	/**
+	 * <p>If isSellallOnly, this item should never be used within a mine since prison
+	 * cannot regenerate the block to place it in the mines.  Custom blocks have
+	 * many uncontrollable aspects on how they create and use blocks, of which 
+	 * prison cannot begin to magically guess all of these requirements.
+	 * </p>
+	 * 
+	 * <p>If this value is set to true, then the PrisonBlock was added to prison as
+	 * a custom block that is supported only within sellall.
+	 * </p>
+	 * 
+	 * @return
+	 */
+	public boolean isSellallOnly() {
+		return sellallOnly;
+	}
+	public void setSellallOnly(boolean sellallOnly) {
+		this.sellallOnly = sellallOnly;
+	}
 	/**
 	 * <p>This value isLegacyBlock indicates that there was not a direct match
 	 * with the stored (saved) name of the block, and list of valid block types

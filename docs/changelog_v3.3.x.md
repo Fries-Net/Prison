@@ -17,6 +17,10 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19e 2024-12-22
 
 
+* **PrisonBlock: Add isSellallOnly to prevent blocks added through sellall from being used in mines.**
+
+
+
 * **Sellall: Much better support for blocks with custom names.**  Both for rejecting the wrong blocks, but also for now being able to sell them.
 These changes are not perfect  and does not support some conditions.
 Prison currently does not support multiple custom blocks with the same material types and the same display name.

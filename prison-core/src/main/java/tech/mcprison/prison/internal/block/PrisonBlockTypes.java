@@ -114,7 +114,9 @@ public class PrisonBlockTypes {
 		searchTerm = searchTerm.toLowerCase().replace(" ", "_");
 		
     	for ( PrisonBlock pBlock : getBlockTypes() ) {
-    		if ( (!restrictToBlocks || restrictToBlocks && pBlock.isBlock()) && 
+    		if ( (!restrictToBlocks || 
+    				restrictToBlocks && 
+    					pBlock.isBlock() && !pBlock.isSellallOnly()) &&
     				pBlock.getBlockNameSearch().contains( searchTerm  )) {
     			results.add( pBlock );
     		}

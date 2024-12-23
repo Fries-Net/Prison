@@ -1556,6 +1556,10 @@ public class SellAllUtil
             	// create a prison block for this sellall item:
             	pBlock = new PrisonBlock( key.trim().toLowerCase() );
             	
+            	
+            	// Prevent this item from being used within mines:
+            	pBlock.setSellallOnly( true );
+            	
             	// Add it:
             	List<PrisonBlock> newBlockTypes = new ArrayList<>();
             	newBlockTypes.add( pBlock );

@@ -36,7 +36,7 @@ public interface Block {
      *
      * @return The {@link Location} of the block.
      */
-    Location getLocation();
+    public Location getLocation();
 
     /**
      * Returns the {@link Block} at the position relative to this one.
@@ -44,7 +44,7 @@ public interface Block {
      * @param face The {@link BlockFace} that the relative block touches.
      * @return The {@link Block} relative to this one.
      */
-    Block getRelative(BlockFace face);
+    public Block getRelative(BlockFace face);
 
 //    /**
 //     * Returns the type of this block.
