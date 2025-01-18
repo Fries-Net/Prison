@@ -23,7 +23,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -41,9 +40,7 @@ import tech.mcprison.prison.internal.Player;
 import tech.mcprison.prison.internal.World;
 import tech.mcprison.prison.internal.block.Block;
 import tech.mcprison.prison.internal.block.MineResetType;
-import tech.mcprison.prison.internal.block.MineTargetPrisonBlock;
 import tech.mcprison.prison.internal.block.PrisonBlock;
-import tech.mcprison.prison.internal.block.PrisonBlockStatusData;
 import tech.mcprison.prison.mines.PrisonMines;
 import tech.mcprison.prison.mines.data.Mine;
 import tech.mcprison.prison.mines.data.Mine.MineNotificationMode;
@@ -3357,7 +3354,9 @@ public class MinesCommands
     	if ( mineName != null && 
     			"list".equals( mineName )) {
     		
-        	Player player = getPlayer( sender, playerName );
+        	Player player = playerName != null && playerName.trim().length() > 0 ?
+        					getPlayerByName( playerName ) : 
+        						sender.getRankPlayer();
         	
 //        	Player playerAlt = getPlayer( playerName );
 //        	
@@ -5728,7 +5727,12 @@ private ChatDisplay minesCommandList( Mine m )
     		player = sender.getPlatformPlayer();
     	}
         else {
-        	player = getPlayer( sender, playerName );
+        	
+        	// Get a Bukkit online player, which is needed to run the WorldGuard commands through:
+        	Prison.get().getPlatform().getPlayer(playerName);
+        	
+//        	player = getPlayerByName( playerName );
+//        	player = getPlayer( sender, playerName );
         }
         
         

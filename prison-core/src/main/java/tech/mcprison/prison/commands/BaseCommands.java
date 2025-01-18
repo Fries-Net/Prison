@@ -37,24 +37,50 @@ public abstract class BaseCommands
      * ensure a player is always returned, if its a valid player.
      * </p>
      * 
+     * <p>Never should this function return a Player based upon sender.
+     * </p>
+     * 
      * @param sender
      * @param playerName is optional, if not supplied, then sender will be used
      * @return Player if found, or null.
      */
-	public Player getPlayer( CommandSender sender, String playerName ) {
-		return getPlayer( sender, playerName, null );
+	public Player getPlayerByName( // CommandSender sender, 
+			String playerName ) {
+		return getPlayerByName( // sender, 
+				playerName, null );
 	}
 //	public Player getPlayer( CommandSender sender ) {
 //		return getPlayer( sender, null, null );
 //	}
-	public Player getPlayer( CommandSender sender, String playerName, UUID uuid ) {
+	
+	/**
+	 * <p>This function should only return a Player based upon either the player's name
+	 * or their UUID.  It should never return a Player based upon sender.
+	 * </p>
+	 * 
+	 * <p>Gets a player by name.  If the player is not online, then try to get them from 
+     * the offline player list. If not one is found, then return a null.
+     * </p>
+     * 
+     * <p>The getOfflinePlayer() will now include RankPlayer as a fall back to help
+     * ensure a player is always returned, if its a valid player.
+     * </p>
+     * 
+     * 
+	 * @param sender
+	 * @param playerName
+	 * @param uuid
+	 * @return
+	 */
+	public Player getPlayerByName( // CommandSender sender, 
+			String playerName, UUID uuid ) {
 		Player result = null;
 		
-		boolean console = sender == null ? true : "CONSOLE".equalsIgnoreCase( sender.getName() );
-		
-		if ( !console ) {
-			playerName = sender.getName();
-		}
+//		boolean console = sender == null ? true : "CONSOLE".equalsIgnoreCase( sender.getName() );
+//		
+//		if ( !console ) {
+//			playerName = sender.getName();
+//		}
 		
 		result = Prison.get().getPlatform().getRankPlayer( uuid, playerName );
 

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import tech.mcprison.prison.Prison;
 import tech.mcprison.prison.PrisonAPI;
@@ -1617,12 +1618,20 @@ public class RanksCommands
     			@Arg(name = "options", def = "", description = "Options [perms]") String options
     			){
     	
-    	Player player = getPlayer( sender, playerName );
+        RankPlayer rankPlayer = getRankPlayer(sender, null, playerName);
+        
+        if ( rankPlayer == null ) {
+        	rankupInvalidPlayerNameMsg( sender, playerName );
+        	return;
+        }
+        
     	
-    	if (player == null) {
-    		ranksPlayerOnlineMsg( sender );
-    		return;
-    	}
+//    	Player player = getPlayer( sender, playerName );
+//    	
+//    	if (player == null) {
+//    		ranksPlayerOnlineMsg( sender );
+//    		return;
+//    	}
 
     	List<String> msgs = new ArrayList<>();
 
@@ -1634,7 +1643,7 @@ public class RanksCommands
     	
     	
     	//PlayerManager pm = PrisonRanks.getInstance().getPlayerManager();
-    	RankPlayer rankPlayer = player.getRankPlayer();
+//    	RankPlayer rankPlayer = player.getRankPlayer();
 //		RankPlayer rankPlayer = pm.getPlayer(player.getUUID(), player.getName());
 
 		// Get the cachedPlayer:
@@ -1746,7 +1755,7 @@ public class RanksCommands
 
 			// The default currency first:
 			double balance = rankPlayer.getBalance();
-			String message = ranksPlayerBalanceDefaultMsg( player.getName(), dFmt.format( balance ) );
+			String message = ranksPlayerBalanceDefaultMsg( rankPlayer.getName(), dFmt.format( balance ) );
 			msgs.add( message );
 //			sendToPlayerAndConsole( sender, message );
 			
@@ -1754,18 +1763,18 @@ public class RanksCommands
 			for ( String currency : currencies ) {
 				double balanceCurrency = rankPlayer.getBalance( currency );
 				String messageCurrency = ranksPlayerBalanceOthersMsg( 
-						player.getName(), dFmt.format( balanceCurrency ), currency );
+						rankPlayer.getName(), dFmt.format( balanceCurrency ), currency );
 				msgs.add( messageCurrency );
 //				sendToPlayerAndConsole( sender, messageCurrency );
 
 			}
 			
-			boolean isOp = player.isOp();
-			boolean isPlayer = player.isPlayer();
-			boolean isOnline = player.isOnline();
+			boolean isOp = rankPlayer.isOp();
+			boolean isPlayer = rankPlayer.isPlayer();
+			boolean isOnline = rankPlayer.isOnline();
 			
-			boolean isPrisonPlayer = (player instanceof Player);
-			boolean isPrisonOfflineMcPlayer = (player instanceof OfflineMcPlayer);
+			boolean isPrisonPlayer = (rankPlayer instanceof Player);
+			boolean isPrisonOfflineMcPlayer = (rankPlayer instanceof OfflineMcPlayer);
 
 			if ( !isOnline ) {
 				String msgOffline = ranksPlayerPermsOfflineMsg();
@@ -1789,7 +1798,7 @@ public class RanksCommands
 			//          on the server, and they may not be their current listings.
 			List<String> sellallDetails = 
 					isOnline ?
-							player.getSellAllMultiplierListings() :
+							rankPlayer.getSellAllMultiplierListings() :
 							rankPlayer.getSellallMultipliers();
 
 			
@@ -1940,9 +1949,9 @@ public class RanksCommands
 						sendToPlayerAndConsole( sender, ranksPlayerPermsOfflineMsg() );
 					}
 					
-					player.recalculatePermissions();
+					rankPlayer.recalculatePermissions();
 					
-					List<String> perms = player.getPermissions();
+					List<String> perms = rankPlayer.getPermissions();
 					
 					listPermissions( sender, "bukkit", perms );
 
@@ -1958,7 +1967,7 @@ public class RanksCommands
 							
 							PermissionIntegration integrationPerms = (PermissionIntegration) pIntegration;
 							
-							List<String> iPerms = integrationPerms.getPermissions( player, true );
+							List<String> iPerms = integrationPerms.getPermissions( rankPlayer, true );
 							
 							String permSource = integrationPerms.getDisplayName();
 							listPermissions( sender, permSource, iPerms );
@@ -2638,4 +2647,28 @@ public class RanksCommands
 //    }
     
 
+    
+	/**
+	 * This gets the RankPlayer for the given UUID or playerName.  The 'sender' generally is the 
+	 * console, or an admin that is trying to run the command for a player.
+	 * So although the sender has a 'getRankPlayer()' function, it may be for the wrong player.
+	 * 
+
+	 * 
+	 * @param sender The one who should get an messages, but is not the one for RankPlayer.
+	 * @param playerUuid
+	 * @param playerName
+	 * @return
+	 */
+	public RankPlayer getRankPlayer( CommandSender sender, UUID playerUuid, String playerName ) {
+		
+		RankPlayer player = PrisonRanks.getInstance().getPlayerManager().getPlayer(playerUuid, playerName);
+
+        // Well, this isn't supposed to happen...
+        if ( player == null ) {
+        	ranksRankupFailureToGetRankPlayerMsg( sender );
+        }
+
+        return player;
+	}
 }

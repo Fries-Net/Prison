@@ -682,4 +682,18 @@ public class RanksCommandsMessages
 		
 	}
 	
+	
+	protected void ranksRankupFailureToGetRankPlayerMsg( CommandSender sender ) {
+       	PrisonRanks.getInstance().getRanksMessages()
+	    		.getLocalizable( "ranks_rankup__rankup_failure_to_get_rankplayer" )
+	    		.sendTo( sender );
+	}
+	
+	
+	protected void rankupInvalidPlayerNameMsg(CommandSender sender, String playerName) {
+		PrisonRanks.getInstance().getRanksMessages()
+				.getLocalizable( "ranks_rankup__invalid_player_name" )
+				.withReplacements( playerName )
+				.sendTo(sender);
+	}
 }

@@ -14,7 +14,13 @@
 These change logs represent the work that has been going on within prison. 
 
 
-# 3.3.0-alpha.19e 2024-12-22
+# 3.3.0-alpha.19e 2025-01-18
+
+
+* **Ranks: Some rank commands were failing to work properly because they were not getting the correct player.**
+Instead of getting the play by name, it was using the sender, which would have been the player issuing the command.
+This was an issue with '/ranks promote' and '/ranks demote' when issued in game.
+This was fixed by only allowing the named player to be resolved, without giving the sender an option to be used.  This was changed in a number of areas to help protect form possible errors.
 
 
 * **PrisonBlock: Add isSellallOnly to prevent blocks added through sellall from being used in mines.**

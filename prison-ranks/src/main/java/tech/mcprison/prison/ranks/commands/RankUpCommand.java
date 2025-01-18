@@ -104,22 +104,23 @@ public class RankUpCommand
     		if ( !LadderManager.LADDER_PRESTIGES.equalsIgnoreCase( ladder ) && 
     				!LadderManager.LADDER_DEFAULT.equalsIgnoreCase( ladder )) {
     			
-    			success = rankUpPrivate(sender, "", ladder, mode, perms, cmdTasks, sbRanks );
+    			success = rankUpPrivate(sender, null, ladder, mode, perms, cmdTasks, sbRanks );
     		}
     		else {
     			
     			// Run rankupmax on the default ladder only:
-    			success = rankUpPrivate(sender, "", LadderManager.LADDER_DEFAULT, mode, perms, cmdTasks, sbRanks );
+    			success = rankUpPrivate(sender, null, LadderManager.LADDER_DEFAULT, mode, perms, cmdTasks, sbRanks );
     			
     			// If they specified the prestiges ladder, then try to prestige that one rank:
     			if ( success && LadderManager.LADDER_PRESTIGES.equalsIgnoreCase( ladder ) ) {
     				
-    				success = rankUpPrivate(sender, "", LadderManager.LADDER_PRESTIGES, RankupModes.ONE_RANK, perms, cmdTasks, sbRanks );
+    				success = rankUpPrivate(sender, null, LadderManager.LADDER_PRESTIGES, RankupModes.ONE_RANK, perms, cmdTasks, sbRanks );
     			}
     		}
     		
 			
-    		Player player = getPlayer( sender, null );
+    		Player player = getPlayerByName( sender.getName());
+//    		Player player = getPlayer( sender, null );
 			
 			// submit cmdTasks
 			if ( cmdTasks.size() > 0 ) {
@@ -139,7 +140,8 @@ public class RankUpCommand
 			}
 		}
     	else {
-    		Player player = getPlayer( sender, null );
+    		Player player = getPlayerByName( sender.getName() );
+//    		Player player = getPlayer( sender, null );
     		Output.get().logDebug( DebugTarget.rankup, 
     				"Rankup: Failed: cmd '/rankupmax %s'  Does not have the permission ranks.rankupmax.%s", 
     				ladder, ladder );
@@ -177,17 +179,37 @@ public class RankUpCommand
         
 		boolean isPlayer = sender.isPlayer();
 		
-		if ( isPlayer ) {
+		if ( isPlayer && sender.isOp() && playerName != null && playerName.trim().length() > 0 ) {
+			// use playerName as is since the OP'd player is using this command on someone else:
+		}
+		else if ( isPlayer ) {
 			playerName = "";
 		}
 		
 		
 		// NOTE: If this is being ran from the console, the a 'playerName' parameter must be supplied:
-        if ( !isPlayer && playerName.length() == 0 ) {
+		else if ( !isPlayer && playerName.length() == 0 ) {
         	Output.get().logInfo( rankupCannotRunFromConsoleMsg() );
         	return;
         }
         
+        
+        
+		
+        RankPlayer rPlayer = getRankPlayer(sender, null, playerName);
+        
+        if ( rPlayer == null ) {
+        	rankupInvalidPlayerNameMsg( sender, playerName );
+        	return;
+        }
+        
+        
+//        Player player = getPlayerByName( playerName );
+//        
+//        if ( player == null ) {
+//        	rankupInvalidPlayerNameMsg( sender, playerName );
+//        	return;
+//        }
 
 //        RankPlayer rPlayer = getRankPlayer(sender, null, playerName);
         
@@ -261,7 +283,7 @@ public class RankUpCommand
         		);
         
     	
-;    	if ( isDefaultBypassPermCheck || 
+    	if ( isDefaultBypassPermCheck || 
     			isPrestigeBypassPermCheck ||
     			
     			isLadderDefault && hasDefaultPerm ||
@@ -292,18 +314,20 @@ public class RankUpCommand
         	
         	List<PrisonCommandTaskData> cmdTasks = new ArrayList<>();
         	
-        	rankUpPrivate(sender, playerName, ladder, RankupModes.ONE_RANK, perms, cmdTasks, null );
+        	rankUpPrivate(sender, rPlayer, ladder, RankupModes.ONE_RANK, perms, cmdTasks, null );
+//        	rankUpPrivate(sender, playerName, ladder, RankupModes.ONE_RANK, perms, cmdTasks, null );
         	
         	// submit cmdTasks
-        	Player player = getPlayer( sender, playerName );
-        	submitCmdTasks( player, cmdTasks );
+//        	Player player = getPlayerByName( sender, playerName );
+//        	Player player = getPlayer( sender, playerName );
+        	submitCmdTasks( rPlayer, cmdTasks );
         }
     	else {
-    		Player player = getPlayer( sender, playerName );
+//    		Player player = getPlayer( sender, playerName );
     		Output.get().logDebug( DebugTarget.rankup, 
     				"Rankup: Failed: cmd '/rankup %s'  Does not have the permission %s. [%s]", 
     				ladder, permsLadder, permsCheck );
-    		rankupMaxNoPermissionMsg( sender, permsLadder, player.getRankPlayer() );
+    		rankupMaxNoPermissionMsg( sender, permsLadder, rPlayer );
     	}
         
     }
@@ -467,11 +491,12 @@ public class RankUpCommand
         	List<PrisonCommandTaskData> cmdTasks = new ArrayList<>();
         	
         	String ladder = nRank.getLadder().getName();
-        	rankUpPrivate(sender, playerName, ladder, RankupModes.ONE_RANK, perms, cmdTasks, null );
+        	rankUpPrivate(sender, rPlayer, ladder, RankupModes.ONE_RANK, perms, cmdTasks, null );
+//        	rankUpPrivate(sender, playerName, ladder, RankupModes.ONE_RANK, perms, cmdTasks, null );
         	
         	// submit cmdTasks
-        	Player player = getPlayer( sender, playerName );
-        	submitCmdTasks( player, cmdTasks );
+//        	Player player = getPlayer( sender, playerName );
+        	submitCmdTasks( rPlayer, cmdTasks );
         }
 		else {
 //    		Player player = getPlayer( sender, playerName );
@@ -485,9 +510,43 @@ public class RankUpCommand
     	}
         
     }
-
-
-    private boolean rankUpPrivate(CommandSender sender, String playerName, String ladder, RankupModes mode, 
+	
+	
+//	private boolean rankUpPrivateX(CommandSender sender, 
+//    		String playerName, 
+//			String ladder, RankupModes mode, 
+//			String permission, 
+//			List<PrisonCommandTaskData> cmdTasks, 
+//			StringBuilder sbRanks ) {
+//
+//		boolean rankupSuccess = false;
+//
+//		if ( sender.isPlayer() ) {
+//			playerName = "";
+//		}
+//		
+//        if ( !sender.isPlayer() && playerName.length() == 0 ) {
+//        	Output.get().logInfo( rankupCannotRunFromConsoleMsg() );
+//        	return false;
+//        }
+//        
+//
+//        // Player will always be the player since they have to be online and must be a player:
+//        Player player = getPlayerByName( playerName );
+//        
+//        if ( player == null ) {
+//        	rankupInvalidPlayerNameMsg( sender, playerName );
+//        	return false;
+//        }
+//
+//		
+//		return rankupSuccess;
+//	}
+	
+    private boolean rankUpPrivate(CommandSender sender, 
+    		Player player, 
+//    		String playerName, 
+    		String ladder, RankupModes mode, 
     		String permission, 
     		List<PrisonCommandTaskData> cmdTasks, 
     		StringBuilder sbRanks ) {
@@ -532,27 +591,34 @@ public class RankUpCommand
         }
         
         
-		if ( sender.isPlayer() ) {
-			playerName = "";
-		}
-		
-        if ( !sender.isPlayer() && playerName.length() == 0 ) {
-        	Output.get().logInfo( rankupCannotRunFromConsoleMsg() );
-        	return false;
-        }
-        
+//		if ( sender.isPlayer() ) {
+//			playerName = "";
+//		}
+//		
+//        if ( !sender.isPlayer() && playerName.length() == 0 ) {
+//        	Output.get().logInfo( rankupCannotRunFromConsoleMsg() );
+//        	return false;
+//        }
+//        
+//
+//        // Player will always be the player since they have to be online and must be a player:
+//        Player player = getPlayer( sender, playerName );
+//        
+//        if ( player == null ) {
+//        	rankupInvalidPlayerNameMsg( sender, playerName );
+//        	return false;
+//        }
 
-        // Player will always be the player since they have to be online and must be a player:
-        Player player = getPlayer( sender, playerName );
         
-        if ( player == null ) {
-        	rankupInvalidPlayerNameMsg( sender, playerName );
-        	return false;
-        }
-
+        
         
         //UUID playerUuid = player.getUUID();
-        RankPlayer rankPlayer = getRankPlayer( sender, player.getUUID(), player.getName() );
+        RankPlayer rankPlayer = 
+        		player == null ? 
+        				sender.getRankPlayer() :
+		        		player instanceof RankPlayer ? (RankPlayer) player : 
+		        			player.getRankPlayer();
+        
         
 		ladder = confirmLadder( sender, ladder, rankPlayer );
 		if ( ladder == null ) {
@@ -722,7 +788,7 @@ public class RankUpCommand
         	if (results.getStatus() == RankupStatus.RANKUP_SUCCESS && mode == RankupModes.MAX_RANKS ) {
 //    		if (results.getStatus() == RankupStatus.RANKUP_SUCCESS && mode == RankupModes.MAX_RANKS && 
 //    				!ladder.equals(LadderManager.LADDER_PRESTIGES)) {
-        		rankUpPrivate( sender, playerName, ladder, mode, permission, cmdTasks, sbRanks );
+        		rankUpPrivate( sender, rankPlayer, ladder, mode, permission, cmdTasks, sbRanks );
         	}
         	if (results.getStatus() == RankupStatus.RANKUP_SUCCESS){
         		rankupSuccess = true;
@@ -866,6 +932,18 @@ public class RankUpCommand
 	}
 
 
+
+	/**
+	 * <p>This command requires that a target player be specified and that this can only be 
+	 * ran by an admin.  The act of promoting a player cannot ever fall back on the person 
+	 * issuing the command.
+	 * </p>
+	 * 
+	 * @param sender
+	 * @param playerName
+	 * @param ladder
+	 * @param chargePlayer
+	 */
 	@Command(identifier = "ranks promote", 
 			description = "Promotes a player to the next rank. This is an admin command. " +
 					"This command can be used from the console. There is an " +
@@ -880,34 +958,45 @@ public class RankUpCommand
         					def = "no_charge") String chargePlayer
     		) {
 
-    	Player player = getPlayer( sender, playerName );
-    	UUID playerUuid = player.getUUID();
-    	
-//    	if (player == null) {
-//    		ranksPromotePlayerMustBeOnlineMsg( sender );
-//    		return;
-//    	}
+		
+		
+        RankPlayer rPlayer = getRankPlayer(sender, null, playerName);
+        
+        if ( rPlayer == null ) {
+        	rankupInvalidPlayerNameMsg( sender, playerName );
+        	return;
+        }
+
+		
+//    	Player player = getPlayerByName( playerName );
+//    	
+////    	if (player == null) {
+////    		ranksPromotePlayerMustBeOnlineMsg( sender );
+////    		return;
+////    	}
+
+//    	UUID playerUuid = player.getUUID();
     	
     	RankPlayerFactory rankPlayerFactory = new RankPlayerFactory();
-    	RankPlayer rankPlayer = getRankPlayer( sender, playerUuid, player.getName() );
+//    	RankPlayer rankPlayer = getRankPlayer( sender, playerUuid, player.getName() );
     	
     	PromoteForceCharge pForceCharge = PromoteForceCharge.fromString( chargePlayer );
     	if ( pForceCharge == null|| pForceCharge == PromoteForceCharge.refund_player ) {
     		
-    		ranksPromotePlayerInvalidChargeValueMsg( sender, rankPlayer );
+    		ranksPromotePlayerInvalidChargeValueMsg( sender, rPlayer );
     		return;
     	}
 
         
-		ladder = confirmLadder( sender, ladder, rankPlayer );
+		ladder = confirmLadder( sender, ladder, rPlayer );
 		if ( ladder == null ) {
 			return;
 		}
 
 		
-        PlayerRank playerRank = rankPlayerFactory.getRank( rankPlayer, ladder );
+        PlayerRank playerRank = rankPlayerFactory.getRank( rPlayer, ladder );
         
-        if ( rankPlayer != null && playerRank != null ) {
+        if ( rPlayer != null && playerRank != null ) {
         	
         	Rank pRank = playerRank.getRank();
         	if ( pRank == null ) {
@@ -922,13 +1011,13 @@ public class RankUpCommand
         	
         	List<PrisonCommandTaskData> cmdTasks = new ArrayList<>();
         	
-        	RankupResults results = new RankUtil().promotePlayer(player, rankPlayer, ladder, 
-        			player.getName(), sender.getName(), pForceCharge, cmdTasks );
+        	RankupResults results = new RankUtil().promotePlayer( rPlayer, rPlayer, ladder, 
+        			rPlayer.getName(), sender.getName(), pForceCharge, cmdTasks );
         	
         	// submit cmdTasks...
-        	submitCmdTasks( player, cmdTasks );
+        	submitCmdTasks( rPlayer, cmdTasks );
         	
-        	processResults( sender, player.getName(), results, null, ladder, currency, null );
+        	processResults( sender, rPlayer.getName(), results, null, ladder, currency, null );
         	
         }
         else {
@@ -955,23 +1044,32 @@ public class RankUpCommand
         				def = "no_charge") String refundPlayer
         ) {
 
-    	Player player = getPlayer( sender, playerName );
+		
+        RankPlayer rPlayer = getRankPlayer(sender, null, playerName);
+        
+        if ( rPlayer == null ) {
+        	rankupInvalidPlayerNameMsg( sender, playerName );
+        	return;
+        }
+
+        
+//    	Player player = getPlayer( sender, playerName );
+//    	
+//    	if (player == null) {
+//    		ranksPromotePlayerMustBeOnlineMsg( sender );
+//    		return;
+//    	}
     	
-    	if (player == null) {
-    		ranksPromotePlayerMustBeOnlineMsg( sender );
-    		return;
-    	}
-    	
-    	UUID playerUuid = player.getUUID();
-    	RankPlayer rankPlayer = getRankPlayer( sender, playerUuid, player.getName() );
+//    	UUID playerUuid = player.getUUID();
+//    	RankPlayer rankPlayer = getRankPlayer( sender, playerUuid, player.getName() );
     	
     	PromoteForceCharge pForceCharge = PromoteForceCharge.fromString( refundPlayer );
     	if ( pForceCharge == null || pForceCharge == PromoteForceCharge.charge_player ) {
-    		ranksDemotePlayerInvalidRefundValueMsg( sender, rankPlayer );
+    		ranksDemotePlayerInvalidRefundValueMsg( sender, rPlayer );
     		return;
     	}
     	
-		ladder = confirmLadder( sender, ladder, rankPlayer );
+		ladder = confirmLadder( sender, ladder, rPlayer );
 		if ( ladder == null ) {
 			// Already displayed error message about ladder not existing:
 			return;
@@ -979,9 +1077,9 @@ public class RankUpCommand
 
 		RankPlayerFactory rankPlayerFactory = new RankPlayerFactory();
 		
-        PlayerRank playerRank = rankPlayerFactory.getRank( rankPlayer, ladder );
+        PlayerRank playerRank = rankPlayerFactory.getRank( rPlayer, ladder );
         
-        if ( rankPlayer != null && playerRank != null ) {
+        if ( rPlayer != null && playerRank != null ) {
         	
         	Rank pRank = playerRank.getRank();
         	if ( pRank == null ) {
@@ -996,13 +1094,13 @@ public class RankUpCommand
         	
         	List<PrisonCommandTaskData> cmdTasks = new ArrayList<>();
         	
-        	RankupResults results = new RankUtil().demotePlayer(player, rankPlayer, ladder, 
-        			player.getName(), sender.getName(), pForceCharge, cmdTasks );
+       	RankupResults results = new RankUtil().demotePlayer( rPlayer, rPlayer, ladder, 
+        			rPlayer.getName(), sender.getName(), pForceCharge, cmdTasks );
         	
         	// submit cmdTasks
-        	submitCmdTasks( player, cmdTasks );
+        	submitCmdTasks( rPlayer, cmdTasks );
         	
-        	processResults( sender, player.getName(), results, null, ladder, currency, null );
+        	processResults( sender, rPlayer.getName(), results, null, ladder, currency, null );
         	
         }
         else {
@@ -1032,8 +1130,8 @@ public class RankUpCommand
     		
     		for ( RankPlayer player : pm.getPlayers() ) {
     			
-    			Player targetPlayer = getPlayer( null, player.getName() );
-    			if ( targetPlayer != null ) {
+//    			Player targetPlayer = getPlayerByName( player.getName() );
+//    			if ( targetPlayer != null ) {
     				
     				boolean isSameRank = rank.equalsIgnoreCase("*same*");
 
@@ -1046,14 +1144,14 @@ public class RankUpCommand
     								pRank.getRank().getName() : "";
     				
     				String targetRank = isSameRank ? rankNameCurrent : rank;
-    				setPlayerRank( targetPlayer, targetRank, ladder, sender );
-    			}
+    				setPlayerRank( player, targetRank, ladder, sender );
+//    			}
     		}
     		
     	}
     	else {
     		
-    		Player player = getPlayer( sender, playerName );
+    		Player player = getPlayerByName( playerName );
     		
     		if (player == null) {
     			ranksPromotePlayerMustBeOnlineMsg( sender );
@@ -1090,8 +1188,8 @@ public class RankUpCommand
         												cmdTasks );
         	
         	// submit cmdTasks
-        	Player player = getPlayer( null, rankPlayer.getName() );
-			submitCmdTasks( player, cmdTasks );
+//        	Player player = getPlayerByName( rankPlayer.getName() );
+			submitCmdTasks( rankPlayer, cmdTasks );
         	
         	processResults( rankPlayer, rankPlayer.getName(), results, 
         			pRank.getName(), pRank.getLadder().getName(), 
@@ -1119,8 +1217,8 @@ public class RankUpCommand
     						cmdTasks );
     		
     		// submit cmdTasks
-    		Player player = getPlayer( null, rankPlayer.getName() );
-    		submitCmdTasks( player, cmdTasks );
+//    		Player player = getPlayer( null, rankPlayer.getName() );
+    		submitCmdTasks( rankPlayer, cmdTasks );
     		
     		processResults( rankPlayer, rankPlayer.getName(), results, 
     				pRank.getName(), pRank.getLadder().getName(), 
