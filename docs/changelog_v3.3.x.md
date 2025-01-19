@@ -17,6 +17,9 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19e 2025-01-18
 
 
+* **NBT-Lib: Upgrade from v2.14.0 to v2.14.1 so as to better support v1.21.4.**
+
+
 * **Ranks: Some rank commands were failing to work properly because they were not getting the correct player.**
 Instead of getting the play by name, it was using the sender, which would have been the player issuing the command.
 This was an issue with '/ranks promote' and '/ranks demote' when issued in game.
