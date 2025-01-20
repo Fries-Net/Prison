@@ -997,7 +997,7 @@ public class SpigotPlayer
 		boolean results = false;
 		
 		if ( SpigotPrison.getInstance().isSellAllEnabled() &&
-				SellAllUtil.get().isAutoSellEnabled ) {
+				SellAllUtil.isAutoSellEnabled() ) {
 			
 			if ( SellAllUtil.get().isAutoSellPerUserToggleable ) {
 				debugInfo.append( "(&7sellallEnabled:userToggleable&3)" );

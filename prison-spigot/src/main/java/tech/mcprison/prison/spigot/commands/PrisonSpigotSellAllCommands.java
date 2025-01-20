@@ -201,7 +201,7 @@ public class PrisonSpigotSellAllCommands extends PrisonSpigotBaseCommands {
         }
 
         boolean enableBoolean = getBoolean(enable);
-        if (sellAllUtil.isAutoSellEnabled == enableBoolean){
+        if ( SellAllUtil.isAutoSellEnabled() == enableBoolean ) {
             if (enableBoolean){
                 Output.get().sendWarn(sender, messages.getString(MessagesConfig.StringID.spigot_message_sellall_auto_already_enabled));
             } else {
@@ -300,7 +300,7 @@ public class PrisonSpigotSellAllCommands extends PrisonSpigotBaseCommands {
 
         else if (p == null){
         	
-        	if ( getPlayer( sender, playerName ) != null ) {
+        	if ( getPlayerByName( playerName ) != null ) {
         		
         		sender.sendMessage( String.format( "&cSorry but the specified player must be online "
         				+ "[/sellall sell %s]", playerName ) );
@@ -464,7 +464,7 @@ public class PrisonSpigotSellAllCommands extends PrisonSpigotBaseCommands {
 
         else if (p == null){
         	
-        	if ( getPlayer( sender, playerName ) != null ) {
+        	if ( getPlayerByName( playerName ) != null ) {
         		
         		sender.sendMessage( 
         				String.format( "&cSorry but the specified player must be online "
@@ -752,29 +752,34 @@ public class PrisonSpigotSellAllCommands extends PrisonSpigotBaseCommands {
             return;
         }
 
-        try {
-            XMaterial blockAdd;
-            try {
-                blockAdd = XMaterial.matchXMaterial(itemID).orElse(null);
-            } 
-            catch (IllegalArgumentException ex){
-            	sender.sendMessage( messages.getString(
-                		MessagesConfig.StringID.spigot_message_sellall_item_id_not_found) + 
-                		" [" + itemID + "]");
-                return;
-            }
-
-            if (sellAllUtil.addSellAllBlock(blockAdd, value)){
-            	sender.sendMessage( "&3 ITEM [" + itemID + ", " + value + "] " + 
-                			messages.getString(MessagesConfig.StringID.spigot_message_sellall_item_add_success));
-            }
-
-        } 
-        catch (IllegalArgumentException ex){
-        	sender.sendMessage( messages.getString(
-            		MessagesConfig.StringID.spigot_message_sellall_item_id_not_found) + 
-            		" [" + itemID + "]");
+        if (sellAllUtil.addSellAllBlock( itemID, null, value )) {
+        	sender.sendMessage( "&3 ITEM [" + itemID + ", " + value + "] " + 
+        			messages.getString(MessagesConfig.StringID.spigot_message_sellall_item_add_success));
         }
+
+//        try {
+//            XMaterial blockAdd;
+//            try {
+//                blockAdd = XMaterial.matchXMaterial(itemID).orElse(null);
+//            } 
+//            catch (IllegalArgumentException ex){
+//            	sender.sendMessage( messages.getString(
+//                		MessagesConfig.StringID.spigot_message_sellall_item_id_not_found) + 
+//                		" [" + itemID + "]");
+//                return;
+//            }
+//
+//            if (sellAllUtil.addSellAllBlock(blockAdd, value)){
+//            	sender.sendMessage( "&3 ITEM [" + itemID + ", " + value + "] " + 
+//                			messages.getString(MessagesConfig.StringID.spigot_message_sellall_item_add_success));
+//            }
+//
+//        } 
+//        catch (IllegalArgumentException ex){
+//        	sender.sendMessage( messages.getString(
+//            		MessagesConfig.StringID.spigot_message_sellall_item_id_not_found) + 
+//            		" [" + itemID + "]");
+//        }
     }
 
     
@@ -834,7 +839,7 @@ public class PrisonSpigotSellAllCommands extends PrisonSpigotBaseCommands {
     			String sellallName = pBlock.getBlockNameSearch();
 
     			
-    			if (sellAllUtil.sellAllConfig.getConfigurationSection("Items." + sellallName) != null){
+    			if (sellAllUtil.sellAllConfig.getConfigurationSection("Items." + sellallName.toUpperCase()) != null){
     				sender.sendMessage( sellallName + " " + 
     						messages.getString(MessagesConfig.StringID.spigot_message_sellall_item_already_added));
     				return;
@@ -886,7 +891,7 @@ public class PrisonSpigotSellAllCommands extends PrisonSpigotBaseCommands {
     				+ "sellall shop. Use `/sellall list` to identify which items to revmove.", 
     		permissions = "prison.admin", onlyPlayers = false)
     private void sellAllDeleteCommand(CommandSender sender, 
-    		@Arg(name = "Item_ID", description = "The Item_ID you want to remove.") String itemID){
+    		@Arg(name = "Item_ID", description = "The Item_ID you want to remove.") String itemID ) {
 
         if ( !isEnabled() ) {
         	return;
@@ -905,11 +910,15 @@ public class PrisonSpigotSellAllCommands extends PrisonSpigotBaseCommands {
             return;
         }
 
-        if (XMaterial.matchXMaterial(itemID).isPresent()) {
-            if (sellAllUtil.removeSellAllBlock(XMaterial.matchXMaterial(itemID).get())) {
-                Output.get().sendInfo(sender, itemID + " " + messages.getString(MessagesConfig.StringID.spigot_message_sellall_item_delete_success));
-            }
+        if (sellAllUtil.removeSellAllBlock(itemID)) {
+        	Output.get().sendInfo(sender, itemID + " " + messages.getString(MessagesConfig.StringID.spigot_message_sellall_item_delete_success));
         }
+
+//        if (XMaterial.matchXMaterial(itemID).isPresent()) {
+//            if (sellAllUtil.removeSellAllBlock(XMaterial.matchXMaterial(itemID).get())) {
+//                Output.get().sendInfo(sender, itemID + " " + messages.getString(MessagesConfig.StringID.spigot_message_sellall_item_delete_success));
+//            }
+//        }
     }
 
     @Command(identifier = "sellall items edit", 
@@ -941,22 +950,33 @@ public class PrisonSpigotSellAllCommands extends PrisonSpigotBaseCommands {
             return;
         }
 
-        try {
-            XMaterial blockAdd;
-            try{
-                blockAdd = XMaterial.matchXMaterial(itemID).orElse(null);
-            } catch (IllegalArgumentException ex){
-                Output.get().sendError(sender, messages.getString(MessagesConfig.StringID.spigot_message_sellall_item_id_not_found) + " [" + itemID + "]");
-                return;
-            }
-
-            if (sellAllUtil.editPrice(blockAdd, value)){
-                Output.get().sendInfo(sender, "&3ITEM [" + itemID + ", " + value + "] " + messages.getString(MessagesConfig.StringID.spigot_message_sellall_item_edit_success));
-            }
-
-        } catch (IllegalArgumentException ex){
+        if ( sellAllUtil.editPrice( itemID, null, value ) ){
+            Output.get().sendInfo(sender, "&3ITEM [" + itemID + ", " + value + "] " + messages.getString(MessagesConfig.StringID.spigot_message_sellall_item_edit_success));
+        }
+        else {
+        	
             Output.get().sendError(sender, messages.getString(MessagesConfig.StringID.spigot_message_sellall_item_id_not_found) + " [" + itemID + "]");
         }
+        
+//        try {
+//            XMaterial blockAdd;
+//            try {
+//            	String xMatName = itemID.lastIndexOf(":") > 0 ? itemID.substring(0, itemID.lastIndexOf(":") ) : itemID;
+//            	
+//                blockAdd = XMaterial.matchXMaterial( xMatName ).orElse(null);
+//            } 
+//            catch (IllegalArgumentException ex){
+//                Output.get().sendError(sender, messages.getString(MessagesConfig.StringID.spigot_message_sellall_item_id_not_found) + " [" + itemID + "]");
+//                return;
+//            }
+//
+//            if (sellAllUtil.editPrice(blockAdd, value)){
+//                Output.get().sendInfo(sender, "&3ITEM [" + itemID + ", " + value + "] " + messages.getString(MessagesConfig.StringID.spigot_message_sellall_item_edit_success));
+//            }
+//
+//        } catch (IllegalArgumentException ex){
+//            Output.get().sendError(sender, messages.getString(MessagesConfig.StringID.spigot_message_sellall_item_id_not_found) + " [" + itemID + "]");
+//        }
     }
 
     
@@ -1773,11 +1793,18 @@ public class PrisonSpigotSellAllCommands extends PrisonSpigotBaseCommands {
     
     @Command(identifier = "sellall list", description = "SellAll list all items", 
     		permissions = "prison.admin", onlyPlayers = false)
-    private void sellAllListItems( CommandSender sender ) {
+    private void sellAllListItems( CommandSender sender, 
+    		@Arg(name = "filter", def = "",
+			description = "Optionally, you can provide a filter word fragment " +
+				"that will include only sellall items that 'contains' the fragment. " + 
+				"Example: 'gold', 'old', 'raw', 'ore'.") String filter ) {
 
         if ( !isEnabled() ) {
             return;
         }
+        
+        filter = filter == null || filter.trim().length() == 0 ? "" : filter.trim();
+        
         SellAllUtil sellAllUtil = SellAllUtil.get();
         
         TreeMap<String, PrisonBlock> items = new TreeMap<>( sellAllUtil.getSellAllItems() );
@@ -1792,13 +1819,17 @@ public class PrisonSpigotSellAllCommands extends PrisonSpigotBaseCommands {
 //			if ( key.toString().length() > maxLenKey ) {
 //				maxLenKey = key.toString().length();
 //			}
-			if ( key.length() > maxLenCode ) {
-				maxLenCode = key.length();
-			}
-			String val = fFmt.format( items.get( key ).getSalePrice() );
-			if ( val.length() > maxLenVal ) {
-				maxLenVal = val.length();
-			}
+        	
+        	if ( filter.length() == 0 || key.contains( filter ) ) {
+        		
+        		if ( key.length() > maxLenCode ) {
+        			maxLenCode = key.length();
+        		}
+        		String val = fFmt.format( items.get( key ).getSalePrice() );
+        		if ( val.length() > maxLenVal ) {
+        			maxLenVal = val.length();
+        		}
+        	}
 		}
         
         
@@ -1810,26 +1841,29 @@ public class PrisonSpigotSellAllCommands extends PrisonSpigotBaseCommands {
         for ( String key : keys ) {
 //        	boolean first = sb.length() == 0;
 
-        	Double cost = items.get( key ).getSalePrice();
-        	
-        	if ( sb.length() > 0 ) {
-        		sb.append( "    " );
-        	}
-        	
-        	sb.append( String.format( "%-" + maxLenCode + "s %" + maxLenVal + "s", 
-        			key, fFmt.format( cost ) ) );
-//        	sb.append( String.format( "%-" + maxLenKey + "s  %" + maxLenVal + "s  %-" + maxLenCode + "s", 
-//        			key.toString(), fFmt.format( cost ), key.name() ) );
-        	
-        	if ( ++columns >= 3 ) {
-        		chatDisplay.addText( sb.toString() );
+        	if ( filter.length() == 0 || key.contains( filter ) ) {
         		
-        		if ( ++lines % 10 == 0 && lines > 1 ) {
-        			chatDisplay.addText( " " );
+        		Double cost = items.get( key ).getSalePrice();
+        		
+        		if ( sb.length() > 0 ) {
+        			sb.append( "    " );
         		}
         		
-        		sb.setLength( 0 );
-        		columns = 0;
+        		sb.append( String.format( "%-" + maxLenCode + "s %" + maxLenVal + "s", 
+        				key, fFmt.format( cost ) ) );
+//        	sb.append( String.format( "%-" + maxLenKey + "s  %" + maxLenVal + "s  %-" + maxLenCode + "s", 
+//        			key.toString(), fFmt.format( cost ), key.name() ) );
+        		
+        		if ( ++columns >= 3 ) {
+        			chatDisplay.addText( sb.toString() );
+        			
+        			if ( ++lines % 10 == 0 && lines > 1 ) {
+        				chatDisplay.addText( " " );
+        			}
+        			
+        			sb.setLength( 0 );
+        			columns = 0;
+        		}
         	}
         }
         if ( sb.length() > 0 ) {

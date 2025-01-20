@@ -103,9 +103,9 @@ public class SpigotCommand {
     		// Options.Sell_Per_Block_Permission: prison.sellall.
     		// Options.SellAll_ignoreCustomNames: false
 
+    		boolean saFullInvAutosell = SellAllUtil.isAutoSellEnabled();
     		boolean saPermsEnabled = saUtils.isSellAllSellPermissionEnabled;
     		String saPermsStr = saUtils.permissionSellAllSell;
-    		boolean saFullInvAutosell = saUtils.isAutoSellEnabled;
     		boolean saUserToggle = saUtils.isAutoSellPerUserToggleable;
     		boolean saUserTogglePermEnable = saUtils.isAutoSellPerUserToggleablePermEnabled;
     		String saUserTogglePermStr = saUtils.permissionAutoSellPerUserToggleable;

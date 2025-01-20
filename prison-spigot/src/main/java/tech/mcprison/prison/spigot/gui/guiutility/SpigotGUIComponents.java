@@ -37,7 +37,12 @@ public abstract class SpigotGUIComponents
 
     public static MessagesConfig messages = getMessages();
     public static Configuration guiConfig = getGuiConfig();
-    public static Configuration sellAllConfig = getSellAll();
+    
+    public static Configuration sellAllConfig;
+    
+    static {
+    	updateSellAllConfig();
+    }
 
 //    /**
 //     * Bug: Cannot correctly create a button with Material variants with spigot versions less than 1.13:
@@ -172,12 +177,12 @@ public abstract class SpigotGUIComponents
         return SpigotPrison.getInstance().getMessagesConfig();
     }
 
-    /**
-     * Get SellAll config.
-     * */
-    protected static Configuration getSellAll(){
-        return SpigotPrison.getInstance().updateSellAllConfig();
-    }
+//    /**
+//     * Get SellAll config.
+//     * */
+//    protected static Configuration getSellAll(){
+//        return SpigotPrison.getInstance().updateSellAllConfig();
+//    }
 
     /**
      * Get GUI config.
@@ -213,12 +218,17 @@ public abstract class SpigotGUIComponents
     /**
      * Reload sellall config for GUIs.
      * */
-    public static void updateSellAllConfig(){
-        SellAllUtil util = SpigotPrison.getInstance().getSellAllUtil();
-        if ( util != null ) {
-        	util.updateConfig();
-        	sellAllConfig = util.sellAllConfig;
-        }
+    public static void updateSellAllConfig() {
+    	
+    	if ( SellAllUtil.isAutoSellEnabled() ) {
+    		
+    		sellAllConfig = SellAllUtil.get().initCachedData();
+    	}
+    	
+//        SellAllUtil util = SpigotPrison.getInstance().getSellAllUtil();
+//        if ( util != null ) {
+//        	sellAllConfig = util.sellAllConfig;
+//        }
     }
 
     public static void updateGUIConfig(){

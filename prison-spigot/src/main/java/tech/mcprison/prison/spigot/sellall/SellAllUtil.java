@@ -12,6 +12,7 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -53,10 +54,14 @@ public class SellAllUtil
 
     private static SellAllUtil instance;
     
+    
+    
 //    private final Compatibility compat = SpigotPrison.getInstance().getCompatibility();
 
 //    private final ItemStack lapisLazuli = compat.getLapisItemStack();
     public Configuration sellAllConfig;
+
+    private static Boolean isAutoSellEnabled = null;
     
     private HashMap<String, PrisonBlock> sellAllItems;
 //    private HashMap<XMaterial, Double> sellAllBlocks;
@@ -84,7 +89,6 @@ public class SellAllUtil
     public String permissionAutoSellPerUserToggleable;
     public String permissionItemTrigger;
     public boolean isPerBlockPermissionEnabled;
-    public boolean isAutoSellEnabled;
     public boolean isAutoSellPerUserToggleable;
     public boolean isAutoSellPerUserToggleablePermEnabled;
     public boolean isAutoSellNotificationEnabled;
@@ -129,11 +133,33 @@ public class SellAllUtil
         return instance;
     }
     
+    public static boolean isAutoSellEnabled() {
+    
+    	if ( isAutoSellEnabled == null ) {
+    		
+    		isAutoSellEnabled = SpigotPrison.getInstance().isSellAllEnabled();
+    	}
+    	
+    	return isAutoSellEnabled == null ? false : isAutoSellEnabled;
+    }
+    
     /**
      * Init options that will be cached.
+     * @return 
      * */
-    private void initCachedData() {
+    public Configuration initCachedData() {
+    	
         sellAllConfig = SpigotPrison.getInstance().updateSellAllConfig();
+        
+      
+        refreshClassVariablesFromConfig();
+        
+        return sellAllConfig;
+    }
+    
+    private void refreshClassVariablesFromConfig() {
+      
+        
 //        messages = SpigotPrison.getInstance().getMessagesConfig();
         permissionSellAllSell = sellAllConfig.getString("Options.Sell_Permission");
         permissionBypassSign = sellAllConfig.getString("Options.SellAll_By_Sign_Bypass_Permission");
@@ -224,6 +250,67 @@ public class SellAllUtil
     	
     	return results;
     }
+    
+    
+    
+    
+    
+    public ArrayList<XMaterial> getSellAllItemTriggers() {
+		return sellAllItemTriggers;
+	}
+	public void setSellAllItemTriggers(ArrayList<XMaterial> sellAllItemTriggers) {
+		this.sellAllItemTriggers = sellAllItemTriggers;
+	}
+
+	public PrisonBlock getSellallItem( PrisonBlock blockKey ) {
+    	
+    	PrisonBlock pBlockSellAll = sellAllItems.get( blockKey.getBlockNameSearch() );
+    	
+    	return pBlockSellAll;
+    }
+	public void putSellallItem( PrisonBlock pBlockKey ) {
+		sellAllItems.put( pBlockKey.getBlockNameSearch(), pBlockKey );
+	}
+	
+	public HashMap<String, PrisonBlock> getSellAllItems() {
+		return sellAllItems;
+	}
+	public void setSellAllItems(HashMap<String, PrisonBlock> sellAllItems) {
+		this.sellAllItems = sellAllItems;
+	}
+	
+	public PrisonBlock getPrisonBlock( String itemName ) {
+		PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( itemName );
+		return pBlockKey;
+	}
+	
+	
+	/**
+	 * Return SellAll Prestige Multiplier HashMap read before from config on init.
+	 *
+	 * HashMap details:
+	 * String is the name of the Prestige.
+	 * Double is the multiplier (default 1).
+	 *
+	 * @return HashMap of String-Double.
+	 * */
+	public HashMap<String, Double> getPrestigeMultipliers() {
+		return sellAllPrestigeMultipliers;
+	}
+
+
+    
+    public PrisonBlock getSellAllPrisonBlockKey( String itemID ) {
+    	
+    	PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( itemID );
+    	if ( pBlockKey == null ) {
+    		Output.get().logDebug( "sellall add: invalid block name (%s)", itemID);
+    		return null;
+    	}
+
+    	return pBlockKey;
+    }
+    
 
 //    /**
 //     * Return boolean value from String.
@@ -320,26 +407,6 @@ public class SellAllUtil
 //        return sellAllBlocks;
 //    }
 
-    /**
-     * 
-     * @return HashMap<String, PrisonBlock>
-     */
-    public HashMap<String, PrisonBlock> getSellAllItems() {
-		return sellAllItems;
-	}
-
-	/**
-     * Return SellAll Prestige Multiplier HashMap read before from config on init.
-     *
-     * HashMap details:
-     * String is the name of the Prestige.
-     * Double is the multiplier (default 1).
-     *
-     * @return HashMap of String-Double.
-     * */
-    public HashMap<String, Double> getPrestigeMultipliers() {
-        return sellAllPrestigeMultipliers;
-    }
 
 //    /**
 //     * Get HashMap of XMaterials and amounts from an Inventory.
@@ -1164,11 +1231,11 @@ public class SellAllUtil
     	
     	if ( iStack != null ) {
     		
-    		// This converts a bukkit ItemStackk to a PrisonBlock, and it also sets up the
+    		// This converts a bukkit ItemStack to a PrisonBlock, and it also sets up the
     		// displayName if that is set on the itemStack.
     		PrisonBlock pBlockInv = iStack.getMaterial();
     		
-    		PrisonBlock pBlockSellAll = sellAllItems.get( pBlockInv.getBlockNameSearch() );
+    		PrisonBlock pBlockSellAll = getSellallItem( pBlockInv );
     		
     		if ( pBlockSellAll != null ) {
     			
@@ -1206,13 +1273,7 @@ public class SellAllUtil
     	return soldItem;
     }
     
-    
-    public PrisonBlock getSellallItem( PrisonBlock block ) {
-    	
-    	PrisonBlock pBlockSellAll = sellAllItems.get( block.getBlockNameSearch() );
-    	
-    	return pBlockSellAll;
-    }
+
     
 //    /**
 //     * Get SellAll Sell Money, calculated from all the enabled backpacks (from sellAll config and integrations) and
@@ -1434,7 +1495,7 @@ public class SellAllUtil
     	boolean results = false;
     	
     	// If autosell isn't enabled, then return false
-    	if ( isAutoSellEnabled ) {
+    	if ( isAutoSellEnabled() ) {
     		
     		if ( isAutoSellPerUserToggleable ) {
     			
@@ -1515,15 +1576,15 @@ public class SellAllUtil
         return XMaterial.matchXMaterial(item).isPresent();
     }
 
-    /**
-     * Update SellAll Cached config.
-     * */
-    public void updateConfig(){
-    	
-    	initCachedData();
-    	
-//        sellAllConfig = SpigotPrison.getInstance().updateSellAllConfig();
-    }
+//    /**
+//     * Update SellAll Cached config.
+//     * */
+//    public void updateConfig(){
+//    	
+//    	initCachedData();
+//    	
+////        sellAllConfig = SpigotPrison.getInstance().updateSellAllConfig();
+//    }
 
  
 
@@ -1694,7 +1755,7 @@ public class SellAllUtil
      * @return boolean.
      * */
     public boolean addSellAllBlock(XMaterial xMaterial, double value) {
-    	return addSellAllBlock( xMaterial, null, value );
+    	return addSellAllBlock( xMaterial.name(), null, value );
     }
     
     /**
@@ -1708,11 +1769,11 @@ public class SellAllUtil
      * @param value
      * @return
      */
-    public boolean addSellAllBlock(XMaterial xMaterial, String displayName, double value) {
+    public boolean addSellAllBlock( String itemID, String displayName, double value) {
     	
-    	PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( xMaterial.name() );
+    	PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( itemID );
     	if ( pBlockKey == null ) {
-    		Output.get().logDebug( "sellall add: invalid block name (%s)", xMaterial.name());
+    		Output.get().logDebug( "sellall add: invalid block name (%s)", itemID);
     		return false;
     	}
     	
@@ -1721,14 +1782,11 @@ public class SellAllUtil
     		pBlockKey.setDisplayName( displayName );
     	}
     	
-    	String key = pBlockKey.getBlockNameSearch();
-//    	String key = pBlockKey.getBlockName().toLowerCase();
-    	
-    	PrisonBlock pBlock = sellAllItems.get( key );
+    	PrisonBlock pBlock = getSellallItem( pBlockKey );
 
     	// If that is an invalid PrisonBlock, then exit
     	if ( pBlock != null ) {
-    		Output.get().logDebug( "sellall add: block already exists (%s)", xMaterial.name());
+    		Output.get().logDebug( "sellall add: block already exists (%s)", itemID);
     		return false;
     	}
     	
@@ -1738,29 +1796,39 @@ public class SellAllUtil
     	
         try {
         	
-        	String itemName = pBlockKey.getBlockName().toUpperCase();
+        	File sellAllFile = new File(SpigotPrison.getInstance().getDataFolder() + "/SellAllConfig.yml");
+        	FileConfiguration conf = YamlConfiguration.loadConfiguration(sellAllFile);
+    		
+    		String itemName = pBlockKey.getBlockNameSearch().toUpperCase();
+    		String confKey = "Items." + itemName;
+    		
+    		ConfigurationSection confSection = conf.getConfigurationSection( confKey );
+    		
         	
-            File sellAllFile = new File(SpigotPrison.getInstance().getDataFolder() + "/SellAllConfig.yml");
-            FileConfiguration conf = YamlConfiguration.loadConfiguration(sellAllFile);
-            conf.set("Items." + itemName + ".ITEM_ID", xMaterial.name());
-            conf.set("Items." + itemName + ".ITEM_VALUE", value);
-            conf.set("Items." + itemName + ".IS_LORE_ALLOWED", pBlock.isLoreAllowed() );
+//        	String itemName = pBlockKey.getBlockName().toUpperCase(); // BUG!!
+        	
+    		confSection.set("ITEM_ID", itemID );
+    		confSection.set("ITEM_VALUE", value);
+            confSection.set("IS_LORE_ALLOWED", pBlock.isLoreAllowed() );
             
             if ( displayName != null ) {
-            	conf.set("Items." + itemName + ".ITEM_DISPLAY_NAME", displayName );
+            	confSection.set("ITEM_DISPLAY_NAME", displayName );
             }
             
             if (getBooleanValue("Options.Sell_Per_Block_Permission_Enabled")) {
-            	String itemPerm = "Items." + itemName + ".ITEM_PERMISSION";
-                conf.set( itemPerm, sellAllConfig.getString("Options.Sell_Per_Block_Permission") + xMaterial.name());
+            	confSection.set( "ITEM_PERMISSION", sellAllConfig.getString("Options.Sell_Per_Block_Permission") + itemID);
             }
+            
             conf.save(sellAllFile);
-            updateConfig();
+            refreshClassVariablesFromConfig();
 
             pBlockKey.setSalePrice( value );
-            sellAllItems.put( pBlockKey.getBlockNameSearch(), pBlockKey );
+            putSellallItem( pBlockKey );
+//            sellAllItems.put( pBlockKey.getBlockNameSearch(), pBlockKey );
 
-        } catch (IOException e) {
+        } 
+        catch (IOException e) {
+        	
             e.printStackTrace();
             return false;
         }
@@ -1787,7 +1855,9 @@ public class SellAllUtil
      */
     public boolean addSellAllBlock( String itemNameSearch, double value, PrisonBlock pBlock ) {
     	
-    	PrisonBlock pBlockSellall = sellAllItems.get( itemNameSearch );
+    	PrisonBlock pBlockKey = getPrisonBlock( itemNameSearch );
+    	
+    	PrisonBlock pBlockSellall = pBlockKey == null ? null : getSellallItem( pBlockKey );
     	
     	// If that is an invalid PrisonBlock, then exit
     	if ( pBlockSellall != null ) {
@@ -1801,43 +1871,65 @@ public class SellAllUtil
     	
     	try {
     		
-    		String itemName = itemNameSearch.toUpperCase();
-    		String displayName = pBlock.getDisplayName();
+    		if ( pBlockSellall == null ) {
+    			
+    			pBlockSellall = pBlock.clone();
+    		}
+    		
+//    		String itemName = itemNameSearch.toUpperCase();
+    		String displayName = pBlockSellall.getDisplayName();
 
     		
     		File sellAllFile = new File(SpigotPrison.getInstance().getDataFolder() + "/SellAllConfig.yml");
     		FileConfiguration conf = YamlConfiguration.loadConfiguration(sellAllFile);
     		
-    		conf.set("Items." + itemName + ".ITEM_ID", itemNameSearch );
-    		conf.set("Items." + itemName + ".ITEM_VALUE", value);
-    		conf.set("Items." + itemName + ".IS_LORE_ALLOWED", pBlock.isLoreAllowed() );
+    		String itemName = pBlockSellall.getBlockNameSearch().toUpperCase();
+    		String confKey = "Items." + itemName;
+    		
+    		conf.set(confKey + ".ITEM_ID", pBlockSellall.getBlockNameSearch() );
+    		conf.set(confKey + ".ITEM_VALUE", value);
+    		conf.set(confKey + ".IS_LORE_ALLOWED", pBlockSellall.isLoreAllowed() );
     		
     		if ( displayName != null ) {
-    			conf.set("Items." + itemName + ".ITEM_DISPLAY_NAME", displayName );
+    			conf.set(confKey + ".ITEM_DISPLAY_NAME", displayName );
     		}
     		
     		if (getBooleanValue("Options.Sell_Per_Block_Permission_Enabled")) {
-    			String itemPerm = "Items." + itemName + ".ITEM_PERMISSION";
-    			conf.set( itemPerm, sellAllConfig.getString("Options.Sell_Per_Block_Permission") + itemNameSearch );
+    			conf.set(confKey + ".ITEM_PERMISSION", sellAllConfig.getString("Options.Sell_Per_Block_Permission") + itemNameSearch );
     		}
-    		conf.save(sellAllFile);
-    		updateConfig();
     		
-    		pBlock.setSalePrice( value );
+    		conf.save(sellAllFile);
+    		refreshClassVariablesFromConfig();
+    		
+    		pBlockSellall.setSalePrice( value );
 
-    		PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( itemNameSearch );
+    		
+    		// NOTE: If PrisonBlock Key was null, then that means that prison does not have this setup as a 
+    		//       valid block, so we must create a new prison block and add it.
+//    		PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( itemNameSearch );
     		if ( pBlockKey == null ) {
     			List<PrisonBlock> pbList = new ArrayList<>();
     			
-    			pbList.add( pBlock );
+//    			pBlockKey = pBlockSellall.clone();
+    			
+    			pbList.add( pBlockSellall.clone() );
     			
     			Prison.get().getPlatform().getPrisonBlockTypes().addBlockTypes( pbList );
     		}
     		
-    		sellAllItems.put( itemNameSearch, pBlock );
+    		putSellallItem( pBlockSellall );
+//    		sellAllItems.put( itemNameSearch, pBlock );
     		
-    	} catch (IOException e) {
-    		e.printStackTrace();
+    	} 
+    	catch (IOException e) {
+    		
+    		String msg = String.format( 
+    				"SellAllUtil.addSellAllBlock: Failed to add a new block to SellAll. " +
+    				    "itemSearch: [%s]  value: %s   PrisonBlock: %s  [%s]", 
+    				    itemNameSearch, Prison.get().getDecimalFormatDouble().format( value ), 
+    				    pBlock.getBlockNameSearch(), e.getMessage() );
+    		Output.get().logWarn( msg );
+    		
     		return false;
     	}
     	
@@ -1867,6 +1959,7 @@ public class SellAllUtil
     public boolean addSellallRankMultiplier(String rankName, double multiplier){
     	return addSellallRankMultiplier(rankName, multiplier, false);
     }
+    
     /**
      * Add Multiplier to SellAll depending on the Rank (Rank from any ladder).
      *
@@ -1878,19 +1971,13 @@ public class SellAllUtil
      *
      * @return boolean.
      * */
-    public boolean addSellallRankMultiplier(String rankName, double multiplier, boolean applyToHigherRanks){
+    public boolean addSellallRankMultiplier(String rankName, double multiplier, boolean applyToHigherRanks) {
 
         PrisonRanks rankPlugin = (PrisonRanks) (Prison.get().getModuleManager() == null ? 
         		null : Prison.get().getModuleManager().getModule(PrisonRanks.MODULE_NAME) );
         if (rankPlugin == null) {
             return false;
         }
-
-        
-//        boolean isPrestigeLadder = rankPlugin.getLadderManager().getLadder("prestiges") != null;
-//        if (!isPrestigeLadder) {
-//            return false;
-//        }
 
         Rank rank = rankPlugin.getRankManager().getRank(rankName);
         
@@ -1899,15 +1986,6 @@ public class SellAllUtil
             return false;
         }
 
-//        if ( !pRank.getLadder().isPrestiges() ) {
-//        	// Rank is not in the prestiges ladder:
-//        	return false;
-//        }
-        
-//        boolean isInPrestigeLadder = rankPlugin.getLadderManager().getLadder("prestiges").containsRank(rankPlugin.getRankManager().getRank(prestigeName));
-//        if (!isInPrestigeLadder) {
-//            return false;
-//        }
 
         try {
             File sellAllFile = new File(SpigotPrison.getInstance().getDataFolder() + "/SellAllConfig.yml");
@@ -1928,12 +2006,20 @@ public class SellAllUtil
             conf.save(sellAllFile);
         } 
         catch (IOException e) {
-            e.printStackTrace();
+    		
+    		String msg = String.format( 
+    				"SellAllUtil.addSellAllMultiplier: Failed to add a new rank multiplier to SellAll. " +
+    				    "rankName: [%s]  multiplier: %s  applyToHigherRanks: %s  [%s]", 
+    				    rankName, Prison.get().getDecimalFormatDouble().format( multiplier ),
+    				    Boolean.toString( applyToHigherRanks ),
+    				    e.getMessage() );
+    		Output.get().logWarn( msg );
+    		
             return false;
         }
         
         sellAllPrestigeMultipliers.put( rank.getName(), multiplier);
-        updateConfig();
+        refreshClassVariablesFromConfig();
         
         return true;
     }
@@ -1973,7 +2059,8 @@ public class SellAllUtil
             return false;
         }
         sellAllItemTriggers.add(xMaterial);
-        updateConfig();
+        
+        refreshClassVariablesFromConfig();
         return true;
     }
 
@@ -2148,65 +2235,146 @@ public class SellAllUtil
     	return editPrice( xMaterial, null, value );
     }
     public boolean editPrice(XMaterial xMaterial, String displayName, double value) {
-
-    	PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( xMaterial.name() );
-    	String key = pBlockKey.getBlockNameSearch();
     	
-    	PrisonBlock pBlock = sellAllItems.get( key );
+    	return editPrice( xMaterial.name(), displayName, value );
+
+//    	PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( xMaterial.name() );
+//    	String key = pBlockKey.getBlockNameSearch();
+//    	
+//    	PrisonBlock pBlock = sellAllItems.get( key );
+//    	
+//    	// Do not allow an edit price if the material does not exist, or if the value has not changed:
+//        if ( pBlock == null ){
+//
+//        	Output.get().logDebug( "sellall edit: item does not exist in shop so it cannot be edited (%s)", pBlockKey.getBlockName());
+//            return false;
+//        }
+//        if ( pBlock.getSalePrice() == value ){
+//        	DecimalFormat dFmt = new DecimalFormat("#,##0.00");
+//        	Output.get().logDebug( "sellall edit: No change in price (%s:%s)", 
+//        			pBlockKey.getBlockName(), dFmt.format(value) );
+//        	return false;
+//        }
+//        
+//        pBlock.setSalePrice( value );
+//
+//        try {
+//            File sellAllFile = new File(SpigotPrison.getInstance().getDataFolder() + "/SellAllConfig.yml");
+//            FileConfiguration conf = YamlConfiguration.loadConfiguration(sellAllFile);
+//            
+//            String itemName = key.toUpperCase();
+//            conf.set("Items." + itemName + ".ITEM_ID", key );
+//            conf.set("Items." + itemName + ".ITEM_VALUE", value);
+//            conf.set("Items." + itemName + ".IS_LORE_ALLOWED", pBlock.isLoreAllowed() );
+//            
+//            if ( displayName != null ) {
+//            	conf.set("Items." + itemName + ".ITEM_DISPLAY_NAME", value);
+//            }
+//            else {
+//            	//conf.set("Items." + itemName + ".ITEM_DISPLAY_NAME", null);
+//            }
+//            
+//            
+//            if ( pBlock.getPurchasePrice() != null ) {
+//            	
+//            	conf.set("Items." + itemName + ".PURCHASE_PRICE", pBlock.getPurchasePrice().doubleValue() );
+//            }
+//            
+//            if (getBooleanValue("Options.Sell_Per_Block_Permission_Enabled")) {
+//                conf.set("Items." + itemName + ".ITEM_PERMISSION", sellAllConfig.getString("Options.Sell_Per_Block_Permission") + itemName );
+//            }
+//            conf.save(sellAllFile);
+//
+//            // Update only if successful
+//            refreshClassVariablesFromConfig();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return false;
+//        }
+//        
+//        // pBlock is still in the sellAllItems collection so no need to readd it
+////        sellAllBlocks.put(xMaterial, value);
+//        
+//        return true;
+    }
+    
+    public boolean editPrice( String itemID, String displayName, double value) {
+    	
+    	PrisonBlock pBlockKey = getPrisonBlock( itemID );
+    	PrisonBlock pBlock = getSellallItem( pBlockKey );
+    	
+//    	PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( itemID );
+//    	String key = pBlockKey.getBlockNameSearch();
+//    	
+//    	PrisonBlock pBlock = sellAllItems.get( key );
     	
     	// Do not allow an edit price if the material does not exist, or if the value has not changed:
-        if ( pBlock == null ){
-
-        	Output.get().logDebug( "sellall edit: item does not exist in shop so it cannot be edited (%s)", pBlockKey.getBlockName());
-            return false;
-        }
-        if ( pBlock.getSalePrice() == value ){
-        	DecimalFormat dFmt = new DecimalFormat("#,##0.00");
-        	Output.get().logDebug( "sellall edit: No change in price (%s:%s)", 
-        			pBlockKey.getBlockName(), dFmt.format(value) );
-        	return false;
-        }
-        
-        pBlock.setSalePrice( value );
-
-        try {
-            File sellAllFile = new File(SpigotPrison.getInstance().getDataFolder() + "/SellAllConfig.yml");
-            FileConfiguration conf = YamlConfiguration.loadConfiguration(sellAllFile);
-            
-            String itemName = key.toUpperCase();
-            conf.set("Items." + itemName + ".ITEM_ID", key );
-            conf.set("Items." + itemName + ".ITEM_VALUE", value);
-            conf.set("Items." + itemName + ".IS_LORE_ALLOWED", pBlock.isLoreAllowed() );
-            
-            if ( displayName != null ) {
-            	conf.set("Items." + itemName + ".ITEM_DISPLAY_NAME", value);
-            }
-            else {
-            	//conf.set("Items." + itemName + ".ITEM_DISPLAY_NAME", null);
-            }
-            
-            
-            if ( pBlock.getPurchasePrice() != null ) {
-            	
-            	conf.set("Items." + itemName + ".PURCHASE_PRICE", pBlock.getPurchasePrice().doubleValue() );
-            }
-            
-            if (getBooleanValue("Options.Sell_Per_Block_Permission_Enabled")) {
-                conf.set("Items." + itemName + ".ITEM_PERMISSION", sellAllConfig.getString("Options.Sell_Per_Block_Permission") + itemName );
-            }
-            conf.save(sellAllFile);
-
-            // Update only if successful
-            updateConfig();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-        
-        // pBlock is still in the sellAllItems collection so no need to readd it
+    	if ( pBlock == null ){
+    		
+    		Output.get().logDebug( "sellall edit: item does not exist in shop so it cannot be edited (%s)", pBlockKey.getBlockName());
+    		return false;
+    	}
+    	if ( pBlock.getSalePrice() == value ){
+    		DecimalFormat dFmt = new DecimalFormat("#,##0.00");
+    		Output.get().logDebug( "sellall edit: No change in price (%s:%s)", 
+    				pBlockKey.getBlockName(), dFmt.format(value) );
+    		return false;
+    	}
+    	
+    	pBlock.setSalePrice( value );
+    	
+    	try {
+    		File sellAllFile = new File(SpigotPrison.getInstance().getDataFolder() + "/SellAllConfig.yml");
+    		FileConfiguration conf = YamlConfiguration.loadConfiguration(sellAllFile);
+    		
+    		String itemName = pBlockKey.getBlockNameSearch().toUpperCase();
+    		String confKey = "Items." + itemName;
+    		
+    		ConfigurationSection confSection = conf.getConfigurationSection( confKey );
+    		
+    		
+    		confSection.set("ITEM_ID", pBlockKey.getBlockNameSearch() );
+    		confSection.set("ITEM_VALUE", value);
+    		confSection.set("IS_LORE_ALLOWED", pBlock.isLoreAllowed() );
+    		
+    		if ( displayName != null && displayName.trim().length() > 0 ) {
+    			confSection.set("ITEM_DISPLAY_NAME", displayName.trim() );
+    		}
+    		else {
+    			//confSection.set("ITEM_DISPLAY_NAME", null);
+    		}
+    		
+    		
+    		if ( pBlock.getPurchasePrice() != null ) {
+    			
+    			confSection.set("PURCHASE_PRICE", pBlock.getPurchasePrice().doubleValue() );
+    		}
+    		
+    		if (getBooleanValue("Options.Sell_Per_Block_Permission_Enabled")) {
+    			confSection.set("ITEM_PERMISSION", sellAllConfig.getString("Options.Sell_Per_Block_Permission") + itemName );
+    		}
+    		conf.save(sellAllFile);
+    		
+    		// Update only if successful
+    		refreshClassVariablesFromConfig();
+    	} 
+    	catch (IOException e) {
+    		
+    		String msg = String.format( 
+    				"SellAllUtil.editPrice: Failed to edit an item price. " +
+    				    "itemID: [%s]  DisplayName: %s&r  value: %s  [%s]", 
+    				    itemID, (displayName == null ? "" : displayName ),
+    				    Prison.get().getDecimalFormatDouble().format( value ), 
+    				    e.getMessage() );
+    		Output.get().logWarn( msg );
+    		
+    		return false;
+    	}
+    	
+    	// pBlock is still in the sellAllItems collection so no need to readd it
 //        sellAllBlocks.put(xMaterial, value);
-        
-        return true;
+    	
+    	return true;
     }
     
     
@@ -2218,10 +2386,14 @@ public class SellAllUtil
     	
 //    	PrisonBlock pBlock = sellAllItems.get( key );
     	
+
+    	// Use the block that is stored in sellall:
+    	pBlock = getSellallItem( pBlock );
+    	
     	// Do not allow an edit price if the material does not exist, or if the value has not changed:
-    	if ( sellAllItems.get(pBlock.getBlockNameSearch() ) == null ){
+    	if ( pBlock == null ) {
     		
-    		Output.get().logDebug( "sellall edit: item does not exist in shop so it cannot be edited (%s)", pBlock.getBlockName() );
+    		Output.get().logDebug( "sellall edit: item does not exist in shop so it cannot be edited (%s)", pBlock.getBlockNameSearch() );
     		return false;
     	}
     	if ( pBlock.isLoreAllowed() == value ){
@@ -2243,9 +2415,18 @@ public class SellAllUtil
     		conf.save(sellAllFile);
     		
     		// Update only if successful
-    		updateConfig();
-    	} catch (IOException e) {
-    		e.printStackTrace();
+    		refreshClassVariablesFromConfig();
+    	} 
+    	catch (IOException e) {
+    		
+    		String msg = String.format( 
+    				"SellAllUtil.editAllowLore: Failed to edit the allow lore setting. " +
+    				    "itemID: [%s]  allow Lore?: %s  [%s]", 
+    				    pBlock.getBlockNameSearch(),
+    				    Boolean.toString( value ), 
+    				    e.getMessage() );
+    		Output.get().logWarn( msg );
+    		
     		return false;
     	}
     	
@@ -2289,6 +2470,11 @@ public class SellAllUtil
         return addSellallRankMultiplier(prestigeName, multiplier);
     }
 
+//    public boolean removeSellAllBlock(XMaterial xMaterial){
+//
+//    	return removeSellAllBlock( xMaterial.name() );
+//    }
+    
     /**
      * Remove block by XMaterial name.
      *
@@ -2298,30 +2484,34 @@ public class SellAllUtil
      *
      * @return boolean.
      * */
-    public boolean removeSellAllBlock(XMaterial xMaterial){
+    public boolean removeSellAllBlock( String itemID ) {
 
-    	PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( xMaterial.name() );
-    	String key = pBlockKey.getBlockNameSearch();
-    	
-    	PrisonBlock pBlock = sellAllItems.get( key );
+    	PrisonBlock pBlockKey = getSellallItem( getPrisonBlock( itemID ));
+
+//    	PrisonBlock pBlockKey = Prison.get().getPlatform().getPrisonBlock( itemID );
+//    	String key = pBlockKey.getBlockNameSearch();
+//    	
+//    	PrisonBlock pBlock = sellAllItems.get( key );
+
     
-        if ( pBlock == null ){
+        if ( pBlockKey == null ){
             return false;
         }
 
         try {
             File sellAllFile = new File(SpigotPrison.getInstance().getDataFolder() + "/SellAllConfig.yml");
             FileConfiguration conf = YamlConfiguration.loadConfiguration(sellAllFile);
-            conf.set("Items." + pBlock.getBlockName().toUpperCase(), null);
+            conf.set("Items." + pBlockKey.getBlockName().toUpperCase(), null);
             conf.save(sellAllFile);
 
-            updateConfig();
-        } catch (IOException e) {
+            refreshClassVariablesFromConfig();
+        } 
+        catch (IOException e) {
             e.printStackTrace();
             return false;
         }
         
-        sellAllItems.remove( key );
+        getSellAllItems().remove( pBlockKey.getBlockNameSearch() );
 //        sellAllBlocks.remove(xMaterial);
         return true;
     }
@@ -2362,11 +2552,12 @@ public class SellAllUtil
             FileConfiguration conf = YamlConfiguration.loadConfiguration(sellAllFile);
             conf.set("Multiplier." + rankName, null);
             conf.save(sellAllFile);
-        } catch (IOException e) {
+        } 
+        catch (IOException e) {
             return false;
         }
         sellAllPrestigeMultipliers.remove(rankName);
-        updateConfig();
+        refreshClassVariablesFromConfig();
         return true;
     }
 
@@ -2391,12 +2582,13 @@ public class SellAllUtil
             conf.set("ShiftAndRightClickSellAll.Items." + xMaterial.name() + ".ITEM_ID", null);
             conf.set("ShiftAndRightClickSellAll.Items." + xMaterial.name(), null);
             conf.save(sellAllFile);
-        } catch (IOException e) {
+        } 
+        catch (IOException e) {
             e.printStackTrace();
             return true;
         }
         sellAllItemTriggers.remove(xMaterial);
-        updateConfig();
+        refreshClassVariablesFromConfig();
         return true;
     }
 
@@ -2723,11 +2915,22 @@ public class SellAllUtil
             FileConfiguration conf = YamlConfiguration.loadConfiguration(sellAllFile);
             conf.set("Options.ShiftAndRightClickSellAll.Enabled", isEnabled);
             conf.save(sellAllFile);
-        } catch (IOException e) {
+        } 
+        catch (IOException e) {
+        	
+        	String msg = String.format( 
+    				"SellAllUtil.setItemTrigger: Failed to set the config setting " +
+    				"'Options.ShiftAndRightClickSellAll.Enabled' to a value of %s " +
+    				"since there was a problem trying to save the SellAllConfig.yml file. " +
+    				    "[%s]", 
+    				    Boolean.toString( isEnabled ),
+    				    e.getMessage() );
+    		Output.get().logWarn( msg );
+    		
             return true;
         }
         isSellAllItemTriggerEnabled = isEnabled;
-        updateConfig();
+        refreshClassVariablesFromConfig();
         return true;
     }
 
@@ -2741,7 +2944,7 @@ public class SellAllUtil
      * @return boolean.
      * */
     public boolean setAutoSell(Boolean isEnabled){
-        if (isAutoSellEnabled == isEnabled){
+        if ( isAutoSellEnabled() == isEnabled ) {
             return false;
         }
 
@@ -2750,13 +2953,22 @@ public class SellAllUtil
             FileConfiguration conf = YamlConfiguration.loadConfiguration(sellAllFile);
             conf.set("Options.Full_Inv_AutoSell", isEnabled);
             conf.save(sellAllFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+        } 
+        catch (IOException e) {
+        	
+        	String msg = String.format( 
+    				"SellAllUtil.setAutoSell: Failed to set 'Options.Full_Inv_AutoSell' to a value of %s since " +
+    				"there was a problem trying to save the SellAllConfig.yml file. " +
+    				    "[%s]", 
+    				    Boolean.toString( isAutoSellEnabled() ),
+    				    e.getMessage() );
+    		Output.get().logWarn( msg );
+
+    		return false;
         }
 
         isAutoSellEnabled = isEnabled;
-        updateConfig();
+        refreshClassVariablesFromConfig();
         return true;
     }
 
@@ -2771,9 +2983,9 @@ public class SellAllUtil
      * @return boolean.
      * */
     public boolean setAutoSellPlayer(Player p, boolean enable){
-        if (!(isAutoSellEnabled || 
+        if (!( isAutoSellEnabled() || 
         		AutoFeaturesWrapper.getInstance().isBoolean(AutoFeatures.isAutoSellPerBlockBreakEnabled)) || 
-        		!isAutoSellPerUserToggleable){
+        		!isAutoSellPerUserToggleable ) {
             return false;
         }
 
@@ -2786,12 +2998,22 @@ public class SellAllUtil
             FileConfiguration conf = YamlConfiguration.loadConfiguration(sellAllFile);
             conf.set("Users." + p.getUniqueId() + ".isEnabled", enable);
             conf.save(sellAllFile);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } 
+        catch (IOException e) {
+        	
+        	String msg = String.format( 
+    				"SellAllUtil.setAutoSellPlayer: Failed to set user %s autoSell Per Bbock toggle to a value " +
+    				"of %s since there was a problem trying to save the SellAllConfig.yml file. " +
+    				    "[%s]", 
+    				    p.getName(),
+    				    Boolean.toString( enable ),
+    				    e.getMessage() );
+    		Output.get().logWarn( msg );
+    		
             return false;
         }
 
-        updateConfig();
+        refreshClassVariablesFromConfig();
         return true;
     }
 
@@ -2819,7 +3041,7 @@ public class SellAllUtil
             return false;
         }
         isAutoSellPerUserToggleable = isEnabled;
-        updateConfig();
+        refreshClassVariablesFromConfig();
         return true;
     }
 
@@ -2848,7 +3070,7 @@ public class SellAllUtil
             return false;
         }
         sellAllCurrency = currency;
-        updateConfig();
+        refreshClassVariablesFromConfig();
         return true;
     }
 
@@ -2872,7 +3094,7 @@ public class SellAllUtil
             return false;
         }
         isSellAllDelayEnabled = enabled;
-        updateConfig();
+        refreshClassVariablesFromConfig();
         return true;
     }
 
@@ -2896,7 +3118,7 @@ public class SellAllUtil
             return false;
         }
         defaultSellAllDelay = delay;
-        updateConfig();
+        refreshClassVariablesFromConfig();
         return true;
     }
 
@@ -2985,7 +3207,7 @@ public class SellAllUtil
             return false;
         }
 
-        if (sellAllItems.isEmpty()){
+        if ( getSellAllItems().isEmpty() ) {
             if (!completelySilent){
             	
             	sellallShopIsEmptyMsg( new SpigotCommandSender(p) );
@@ -3264,7 +3486,7 @@ public class SellAllUtil
             return itemStacks;
         }
 
-        if (sellAllItems.isEmpty()){
+        if ( getSellAllItems().isEmpty()){
             if (!completelySilent){
             	
             	sellallShopIsEmptyMsg( new SpigotCommandSender(p) );

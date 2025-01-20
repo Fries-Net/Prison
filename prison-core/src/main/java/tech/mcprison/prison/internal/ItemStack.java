@@ -129,6 +129,12 @@ public class ItemStack {
      * Returns the type of items in this stack.
      */
     public PrisonBlock getMaterial() {
+    	
+    	if ( getDisplayName() != null && getDisplayName().trim().length() > 0 && 
+    			material.getDisplayName() == null || material.getDisplayName().trim().length() == 0 ) {
+    		material.setDisplayName( getDisplayName() );
+    	}
+    	
         return material;
     }
     public void setMaterial( PrisonBlock material ) {

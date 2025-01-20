@@ -14,7 +14,12 @@
 These change logs represent the work that has been going on within prison. 
 
 
-# 3.3.0-alpha.19e 2025-01-18
+# 3.3.0-alpha.19e 2025-01-20
+
+
+* **Sellall: Major changes to better support custom blocks.  Not perfect overall, since some aspects are not fully handled, such as enchantments or filters on specific nbt values.**
+These changes fixes most of the issues with identifying custom blocks and allows them to be sold.  This also fixes a lot of the internals on sellall, which is forcing a lot of movement away from XMaterial and relying more on PrisonBlocks.
+Added better error messages to many functions, instead of just a generic stack trace.  Need to do many more.
 
 
 * **NBT-Lib: Upgrade from v2.14.0 to v2.14.1 so as to better support v1.21.4.**
