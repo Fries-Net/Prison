@@ -939,8 +939,20 @@ public class SpigotUtil {
 		
 		for ( Material spigotMaterial : Material.values() ) {
 			
+			XMaterial xMat = null;
+			
+			try {
+				xMat = XMaterial.matchXMaterial( spigotMaterial );
+			} 
+			catch (Exception e) {
+				// Ignore since this version of spigot/paper does not support this block type
+				// within XMaterial.
+			}
+			
 			if ( spigotMaterial.isBlock() &&
-					XMaterial.matchXMaterial( spigotMaterial ) == null
+					
+					xMat == null
+//					XMaterial.matchXMaterial( spigotMaterial ) == null
 					
 //					BlockType.getBlock( spigotMaterial.name() ) == null 
 					) {

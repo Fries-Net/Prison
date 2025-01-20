@@ -17,6 +17,12 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19e 2025-01-20
 
 
+* **Startup block checks: Had to make changes to the handling of XMaterial since the latest versions are more brittle since they tend to be conflictive with itself.**
+There are now a few block types that actually cause problems if used or accessed.  
+It appears as if 1.21.4 made major changes in how some blocks are identified, and XMaterial has not yet fully caught up with those changes?
+This change captures exceptions caused byXMaterial, when in the past, it would only return a null value instead of throwing an exception.
+
+
 * **Sellall: Major changes to better support custom blocks.  Not perfect overall, since some aspects are not fully handled, such as enchantments or filters on specific nbt values.**
 These changes fixes most of the issues with identifying custom blocks and allows them to be sold.  This also fixes a lot of the internals on sellall, which is forcing a lot of movement away from XMaterial and relying more on PrisonBlocks.
 Added better error messages to many functions, instead of just a generic stack trace.  Need to do many more.
