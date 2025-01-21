@@ -131,7 +131,8 @@ public class ItemStack {
     public PrisonBlock getMaterial() {
     	
     	if ( getDisplayName() != null && getDisplayName().trim().length() > 0 && 
-    			material.getDisplayName() == null || material.getDisplayName().trim().length() == 0 ) {
+    			material.getDisplayName() == null || 
+    					material.getDisplayName() != null && material.getDisplayName().trim().length() == 0 ) {
     		material.setDisplayName( getDisplayName() );
     	}
     	

@@ -168,9 +168,11 @@ public class PrisonBlock
 		
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append( getBlockType().name() )
-			.append( ":" )
-			.append( getBlockName() );
+		sb.append( getBlockNameSearch() );
+		
+//		sb.append( getBlockType().name() )
+//			.append( ":" )
+//			.append( getBlockName() );
 		
 		if ( getChance() > 0 ) {
 			sb.append( " " )

@@ -126,12 +126,30 @@ public class SpigotBlock
     public String toString() {
     	StringBuilder sb = new StringBuilder();
     	
-    	sb.append( getPrisonBlock().getBlockName() ).append( " " )
+    	sb.append( getPrisonBlock().getBlockNameSearch() )
+    		.append( " " )
     			.append( getLocation().toWorldCoordinates() );
+    	
+    	if ( getChance() > 0 ) {
+    		sb.append( " chance:" )
+    			.append( Double.toString( getChance()) );
+    	}
+    	
+    	if ( getSalePrice() > 0 ) {
+    		sb.append( " sell:" )
+    		.append( Double.toString( getSalePrice()) );
+    	}
+    	
+    	if ( getPurchasePrice() > 0 ) {
+    		sb.append( " purch:" )
+    		.append( Double.toString( getPurchasePrice()) );
+    	}
     	
     	
     	return sb.toString();
     }
+    
+    
 
 //    public String getBlockName() {
 //    	return super.getBlockName();

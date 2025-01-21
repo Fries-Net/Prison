@@ -37,7 +37,7 @@ public class SellAllData {
 		StringBuilder sb = new StringBuilder();
 		
 		DecimalFormat dFmt = new DecimalFormat( "#,##0.00" );
-		sb.append( getPrisonBlock().getBlockName() )
+		sb.append( getPrisonBlock().getBlockNameSearch() )
 			.append( ":" )
 			.append( getQuantity() )
 			.append( ":" )
