@@ -119,18 +119,20 @@ public class RankUpCommand
     		}
     		
 			
-    		Player player = getPlayerByName( sender.getName());
+    		RankPlayer rPlayer = sender.getRankPlayer();
+//    		Player player = getPlayerByName( sender.getName());
 //    		Player player = getPlayer( sender, null );
 			
 			// submit cmdTasks
 			if ( cmdTasks.size() > 0 ) {
 				
-				submitCmdTasks( player, cmdTasks );
+				submitCmdTasks( rPlayer, cmdTasks );
 			}
 			
 			
 			if ( sbRanks.length() > 0 ) {
-				ranksRankupMaxSuccessMsg( sender, sbRanks, player.getRankPlayer() );
+				ranksRankupMaxSuccessMsg( sender, sbRanks, rPlayer );
+//				ranksRankupMaxSuccessMsg( sender, sbRanks, player.getRankPlayer() );
 			}
 			
 			// If the ran rankupmax for prestiges, and the last prestige was successful, then
@@ -140,12 +142,14 @@ public class RankUpCommand
 			}
 		}
     	else {
-    		Player player = getPlayerByName( sender.getName() );
+    		RankPlayer rPlayer = sender.getRankPlayer();
+//    		Player player = getPlayerByName( sender.getName() );
 //    		Player player = getPlayer( sender, null );
     		Output.get().logDebug( DebugTarget.rankup, 
     				"Rankup: Failed: cmd '/rankupmax %s'  Does not have the permission ranks.rankupmax.%s", 
     				ladder, ladder );
-    		rankupMaxNoPermissionMsg( sender, "ranks.rankupmax." + ladder, player.getRankPlayer() );
+    		rankupMaxNoPermissionMsg( sender, "ranks.rankupmax." + ladder, rPlayer );
+//    		rankupMaxNoPermissionMsg( sender, "ranks.rankupmax." + ladder, player.getRankPlayer() );
     	}
     }
 
@@ -196,7 +200,9 @@ public class RankUpCommand
         
         
 		
-        RankPlayer rPlayer = getRankPlayer(sender, null, playerName);
+        RankPlayer rPlayer = isPlayer ? 
+        		sender.getRankPlayer() :
+        		getRankPlayer(sender, null, playerName);
         
         if ( rPlayer == null ) {
         	rankupInvalidPlayerNameMsg( sender, playerName );
@@ -379,7 +385,9 @@ public class RankUpCommand
         	return;
         }
         
-        RankPlayer rPlayer = getRankPlayer(sender, null, playerName);
+        RankPlayer rPlayer = isPlayer ?
+        		sender.getRankPlayer() :
+        		getRankPlayer(sender, null, playerName);
         
         if ( rPlayer == null ) {
         	rankupInvalidPlayerNameMsg( sender, playerName );
@@ -544,7 +552,7 @@ public class RankUpCommand
 //	}
 	
     private boolean rankUpPrivate(CommandSender sender, 
-    		Player player, 
+    		RankPlayer rankPlayer, 
 //    		String playerName, 
     		String ladder, RankupModes mode, 
     		String permission, 
@@ -613,11 +621,11 @@ public class RankUpCommand
         
         
         //UUID playerUuid = player.getUUID();
-        RankPlayer rankPlayer = 
-        		player == null ? 
-        				sender.getRankPlayer() :
-		        		player instanceof RankPlayer ? (RankPlayer) player : 
-		        			player.getRankPlayer();
+//        RankPlayer rankPlayer = 
+//        		player == null ? 
+//        				sender.getRankPlayer() :
+//		        		player instanceof RankPlayer ? (RankPlayer) player : 
+//		        			player.getRankPlayer();
         
         
 		ladder = confirmLadder( sender, ladder, rankPlayer );
@@ -777,11 +785,13 @@ public class RankUpCommand
         if (rankPlayer != null ) {
         	
         	// Performs the actual rankup here:
-        	RankupResults results = new RankUtil().rankupPlayer(player, rankPlayer, ladder, 
+        	RankupResults results = new RankUtil().rankupPlayer(rankPlayer, rankPlayer, ladder, 
         						sender.getName(), cmdTasks );
+//        	RankupResults results = new RankUtil().rankupPlayer(player, rankPlayer, ladder, 
+//        			sender.getName(), cmdTasks );
         	
         	
-        	processResults( sender, player.getName(), results, null, ladder, currency, sbRanks );
+        	processResults( sender, rankPlayer.getName(), results, null, ladder, currency, sbRanks );
         	
         	// If the last rankup attempt was successful and they are trying to rankup as many times as possible: 
         	// Note they used to restrict rankupmax from working on prestige ladder... 
@@ -1128,6 +1138,8 @@ public class RankUpCommand
     	if ( "*all*".equalsIgnoreCase( playerName )) {
     		PlayerManager pm = PrisonRanks.getInstance().getPlayerManager();
     		
+    		RankPlayerFactory rankPlayerFactory = new RankPlayerFactory();
+
     		for ( RankPlayer player : pm.getPlayers() ) {
     			
 //    			Player targetPlayer = getPlayerByName( player.getName() );
@@ -1135,8 +1147,6 @@ public class RankUpCommand
     				
     				boolean isSameRank = rank.equalsIgnoreCase("*same*");
 
-    				RankPlayerFactory rankPlayerFactory = new RankPlayerFactory();
-    				
     				PlayerRank pRank = rankPlayerFactory.getRank( player, ladder );
     				String rankNameCurrent = isSameRank && 
     						pRank != null && 
@@ -1158,7 +1168,7 @@ public class RankUpCommand
     			return;
     		}
     		
-    		setPlayerRank( player, rank, ladder, sender );
+    		setPlayerRank( player.getRankPlayer(), rank, ladder, sender );
     	}
     }
 
@@ -1245,12 +1255,12 @@ public class RankUpCommand
     	
     }
     
-	private void setPlayerRank( Player player, String rank, String ladderName, CommandSender sender ) {
-		UUID playerUuid = player.getUUID();
+	private void setPlayerRank( RankPlayer rankPlayer, String rank, String ladderName, CommandSender sender ) {
+//		UUID playerUuid = player.getUUID();
         
        	Output.get().logDebug( DebugTarget.rankup, "Rankup: setPlayerRank: ");
 	
-       	RankPlayer rankPlayer = getRankPlayer( sender, playerUuid, player.getName() );
+//       	RankPlayer rankPlayer = getRankPlayer( sender, playerUuid, player.getName() );
 
        	ladderName = confirmLadder( sender, ladderName, rankPlayer );
         
@@ -1265,13 +1275,13 @@ public class RankUpCommand
         	
         	List<PrisonCommandTaskData> cmdTasks = new ArrayList<>();
         	
-        	RankupResults results = new RankUtil().setRank(player, rankPlayer, ladderName, rank, 
-        			player.getName(), sender.getName(), cmdTasks );
+        	RankupResults results = new RankUtil().setRank(rankPlayer, rankPlayer, ladderName, rank, 
+        			rankPlayer.getName(), sender.getName(), cmdTasks );
         	
         	// submit cmdTasks
-			submitCmdTasks( player, cmdTasks );
+			submitCmdTasks( rankPlayer, cmdTasks );
         	
-        	processResults( sender, player.getName(), results, rank, ladderName, currency, null );
+        	processResults( sender, rankPlayer.getName(), results, rank, ladderName, currency, null );
         }
 	}
 

@@ -14,7 +14,11 @@
 These change logs represent the work that has been going on within prison. 
 
 
-# 3.3.0-alpha.19e 2025-01-20
+# 3.3.0-alpha.19e 2025-02-01
+
+
+* **Rankup: Fixed a problem with rankup commands not using the correct player objects.**
+Simplified how some of the player objects are used to eliminate this issue.
 
 
 * **Startup block checks: Had to make changes to the handling of XMaterial since the latest versions are more brittle since they tend to be conflictive with itself.**
