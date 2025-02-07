@@ -17,6 +17,10 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19e 2025-02-07
 
 
+* **Rankup: Found that a parameter that should not be null was being passed null in a few places.**
+This was a problem in a few places for 'rankupmax'. 
+The RankPlayer object that was expected was available so it was a simple fix.
+
 
 * **NBT & MineBombs: addresses an issue with NBT-Lib caused stack traces when used on a newer platform that the NBT lib has not been updated for.**
 This also fixes the issue (my fault) where the exception that was being thrown was NoClassDefFoundError extends from Error, not Exception, which is what the try-catch was trying to intercept.

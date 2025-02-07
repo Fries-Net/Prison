@@ -85,6 +85,8 @@ public class RankUpCommand
 		boolean isLadderPrestiges = ladder.equalsIgnoreCase(LadderManager.LADDER_PRESTIGES);
 //		boolean isLadderDefault = ladder.equalsIgnoreCase(LadderManager.LADDER_DEFAULT);
     	
+		RankPlayer rPlayer = sender.getRankPlayer();
+		
     	if ( (isPrestigesEnabled && isLadderPrestiges ||
     			!isLadderPrestiges ) && 
     			sender.hasPermission( permsLadder) 
@@ -104,22 +106,22 @@ public class RankUpCommand
     		if ( !LadderManager.LADDER_PRESTIGES.equalsIgnoreCase( ladder ) && 
     				!LadderManager.LADDER_DEFAULT.equalsIgnoreCase( ladder )) {
     			
-    			success = rankUpPrivate(sender, null, ladder, mode, perms, cmdTasks, sbRanks );
+    			success = rankUpPrivate(sender, rPlayer, ladder, mode, perms, cmdTasks, sbRanks );
     		}
     		else {
     			
     			// Run rankupmax on the default ladder only:
-    			success = rankUpPrivate(sender, null, LadderManager.LADDER_DEFAULT, mode, perms, cmdTasks, sbRanks );
+    			success = rankUpPrivate(sender, rPlayer, LadderManager.LADDER_DEFAULT, mode, perms, cmdTasks, sbRanks );
     			
     			// If they specified the prestiges ladder, then try to prestige that one rank:
     			if ( success && LadderManager.LADDER_PRESTIGES.equalsIgnoreCase( ladder ) ) {
     				
-    				success = rankUpPrivate(sender, null, LadderManager.LADDER_PRESTIGES, RankupModes.ONE_RANK, perms, cmdTasks, sbRanks );
+    				success = rankUpPrivate(sender, rPlayer, LadderManager.LADDER_PRESTIGES, RankupModes.ONE_RANK, perms, cmdTasks, sbRanks );
     			}
     		}
     		
 			
-    		RankPlayer rPlayer = sender.getRankPlayer();
+//    		RankPlayer rPlayer = sender.getRankPlayer();
 //    		Player player = getPlayerByName( sender.getName());
 //    		Player player = getPlayer( sender, null );
 			
@@ -142,7 +144,7 @@ public class RankUpCommand
 			}
 		}
     	else {
-    		RankPlayer rPlayer = sender.getRankPlayer();
+//    		RankPlayer rPlayer = sender.getRankPlayer();
 //    		Player player = getPlayerByName( sender.getName() );
 //    		Player player = getPlayer( sender, null );
     		Output.get().logDebug( DebugTarget.rankup, 
