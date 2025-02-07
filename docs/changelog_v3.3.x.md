@@ -17,6 +17,10 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19e 2025-02-07
 
 
+* **Prison versions: Updated the internal references to java versions up to java 29.**
+25 is the highest official value, but extended it by four extra versions just in case this is not revised between now and then.
+
+
 * **Rankup: Found that a parameter that should not be null was being passed null in a few places.**
 This was a problem in a few places for 'rankupmax'. 
 The RankPlayer object that was expected was available so it was a simple fix.
