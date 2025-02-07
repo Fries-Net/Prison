@@ -435,7 +435,7 @@ public class PrisonBombListener
 //	//			}
 //			}
 		} 
-		catch (Exception e) {
+		catch (Exception | Error e) {
 			// Ignore... not a mine bomb.
 		}
 		

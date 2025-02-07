@@ -14,7 +14,13 @@
 These change logs represent the work that has been going on within prison. 
 
 
-# 3.3.0-alpha.19e 2025-02-01
+# 3.3.0-alpha.19e 2025-02-07
+
+
+
+* **NBT & MineBombs: addresses an issue with NBT-Lib caused stack traces when used on a newer platform that the NBT lib has not been updated for.**
+This also fixes the issue (my fault) where the exception that was being thrown was NoClassDefFoundError extends from Error, not Exception, which is what the try-catch was trying to intercept.
+This now will prevent the exception and it will fail silently.
 
 
 * **Rankup: Fixed a problem with rankup commands not using the correct player objects.**

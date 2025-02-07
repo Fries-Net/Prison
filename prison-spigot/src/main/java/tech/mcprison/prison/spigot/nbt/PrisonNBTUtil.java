@@ -70,7 +70,7 @@ public class PrisonNBTUtil {
 			results = NBT.get(bukkitStack, gsFnc );
 //			results = NBT.get(bukkitStack, nbt -> nbt.getString(key));
 		}
-		catch (Exception e) {
+		catch (NoClassDefFoundError | Exception e) {
 			// ignore exception... these are very common if there are no NBTs on the ItemStack
 			
 //			Output.get().logInfo(
