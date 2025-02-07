@@ -14,6 +14,8 @@ import tech.mcprison.prison.ranks.data.RankLadder;
 
 public class PrisonCommandTaskData {
 	
+	private boolean fail = false;
+	
 	private RankLadder ladder;
 	private PlayerRank rankTarget;
 	private PlayerRank rankOriginal;
@@ -107,6 +109,10 @@ public class PrisonCommandTaskData {
 		syncPlayer(CommandEnvironment.all_commands, 
 				"{syncPlayer} runs the command as the payer in a new sync task."),
 
+		
+		range(CommandEnvironment.all_commands, 
+				"{range: <lowNumber> <highNumber>} inserts a randomly choosen number within the "
+				+ "range specified, all inclusive."),
 		
 		ifPerm(CommandEnvironment.all_commands, 
 				"{ifPerm:<perm>} Continues executing commands in the chain if "
@@ -318,9 +324,58 @@ public class PrisonCommandTaskData {
 			command = command.replace( "{syncPlayer}", "" );
 		}
 		
+		if ( command.contains( "{range:") ) {
+			command = taskInsertRange( command );
+		}
+		
 		this.cmd = command;
 		this.taskMode = taskMode;
 		
+	}
+	
+	protected String taskInsertRange(String command) {
+
+		int idx = command.indexOf("{range:");
+		if ( idx != -1 ) {
+			
+			int idxEnd = command.indexOf("}", idx );
+			if ( idxEnd != -1 ) {
+				try {
+					String oValue = command.substring( idx, idxEnd + 1);
+					String results = "";
+					
+					String nValues = oValue.replace( "{range:", "").replace( "}", "" ).trim();
+					String[] lowHigh = nValues.split( " " );
+					
+					int low = Integer.parseInt( lowHigh[0] );
+					int high = Integer.parseInt( lowHigh[1] );
+					
+					if ( high < low ) {
+						int temp = low;
+						low = high;
+						high = temp;
+					}
+					
+					if ( low == high ) {
+						results = Integer.toString( low );
+					}
+					else {
+						int range = high - low;
+						int rnd = ((int) Math.round(Math.random() * range)); 
+						results = Integer.toString( low + rnd );
+					}
+					
+					command = command.replace( oValue, results );
+				} 
+				catch (NumberFormatException e) {
+					// ignore: invalid numbers
+				}
+				
+			}
+			
+		}
+		
+		return command;
 	}
 	
 	public String getDebugDetails() {

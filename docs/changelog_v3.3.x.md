@@ -17,6 +17,11 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19e 2025-02-07
 
 
+* **Prison Commands: Added a new prison command placeholder '{range: <low> <high>}` that can be inserted in commands used in ranks, mines, or block events.**
+This inserts a random integer value in the specified range.
+This is good to provide some variation when issuing commands like give or other type of events.
+
+
 * **Prison versions: Updated the internal references to java versions up to java 29.**
 25 is the highest official value, but extended it by four extra versions just in case this is not revised between now and then.
 
