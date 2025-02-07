@@ -12,7 +12,6 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.configuration.Configuration;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -1801,22 +1800,19 @@ public class SellAllUtil
     		
     		String itemName = pBlockKey.getBlockNameSearch().toUpperCase();
     		String confKey = "Items." + itemName;
-    		
-    		ConfigurationSection confSection = conf.getConfigurationSection( confKey );
-    		
         	
 //        	String itemName = pBlockKey.getBlockName().toUpperCase(); // BUG!!
         	
-    		confSection.set("ITEM_ID", itemID );
-    		confSection.set("ITEM_VALUE", value);
-            confSection.set("IS_LORE_ALLOWED", pBlock.isLoreAllowed() );
+    		conf.set( confKey + ".ITEM_ID", itemID );
+    		conf.set( confKey + ".ITEM_VALUE", value);
+            conf.set( confKey + ".IS_LORE_ALLOWED", pBlock.isLoreAllowed() );
             
             if ( displayName != null ) {
-            	confSection.set("ITEM_DISPLAY_NAME", displayName );
+            	conf.set( confKey + ".ITEM_DISPLAY_NAME", displayName );
             }
             
             if (getBooleanValue("Options.Sell_Per_Block_Permission_Enabled")) {
-            	confSection.set( "ITEM_PERMISSION", sellAllConfig.getString("Options.Sell_Per_Block_Permission") + itemID);
+            	conf.set( confKey + ".ITEM_PERMISSION", sellAllConfig.getString("Options.Sell_Per_Block_Permission") + itemID);
             }
             
             conf.save(sellAllFile);
@@ -2330,15 +2326,15 @@ public class SellAllUtil
     		String itemName = pBlockKey.getBlockNameSearch().toUpperCase();
     		String confKey = "Items." + itemName;
     		
-    		ConfigurationSection confSection = conf.getConfigurationSection( confKey );
+//    		ConfigurationSection confSection = conf.getConfigurationSection( confKey );
     		
     		
-    		confSection.set("ITEM_ID", pBlockKey.getBlockNameSearch() );
-    		confSection.set("ITEM_VALUE", value);
-    		confSection.set("IS_LORE_ALLOWED", pBlock.isLoreAllowed() );
+    		conf.set( confKey + ".ITEM_ID", pBlockKey.getBlockNameSearch() );
+    		conf.set( confKey + ".ITEM_VALUE", value);
+    		conf.set( confKey + ".IS_LORE_ALLOWED", pBlock.isLoreAllowed() );
     		
     		if ( displayName != null && displayName.trim().length() > 0 ) {
-    			confSection.set("ITEM_DISPLAY_NAME", displayName.trim() );
+    			conf.set( confKey + ".ITEM_DISPLAY_NAME", displayName.trim() );
     		}
     		else {
     			//confSection.set("ITEM_DISPLAY_NAME", null);
@@ -2347,11 +2343,11 @@ public class SellAllUtil
     		
     		if ( pBlock.getPurchasePrice() != null ) {
     			
-    			confSection.set("PURCHASE_PRICE", pBlock.getPurchasePrice().doubleValue() );
+    			conf.set( confKey + ".PURCHASE_PRICE", pBlock.getPurchasePrice().doubleValue() );
     		}
     		
     		if (getBooleanValue("Options.Sell_Per_Block_Permission_Enabled")) {
-    			confSection.set("ITEM_PERMISSION", sellAllConfig.getString("Options.Sell_Per_Block_Permission") + itemName );
+    			conf.set( confKey + ".ITEM_PERMISSION", sellAllConfig.getString("Options.Sell_Per_Block_Permission") + itemName );
     		}
     		conf.save(sellAllFile);
     		

@@ -17,6 +17,10 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19e 2025-02-07
 
 
+* **Sellall: Removed use of ConfigurationSection since it works fine until a new value is being added.**
+It was easier to roll back to how it was than to add a bunch of other code to add it if it does not exist.
+
+
 * **Prison Commands: Added a new prison command placeholder '{range: <low> <high>}` that can be inserted in commands used in ranks, mines, or block events.**
 This inserts a random integer value in the specified range.
 This is good to provide some variation when issuing commands like give or other type of events.
