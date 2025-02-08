@@ -663,19 +663,19 @@ Keep in mind that the use of these placeholder are very strict. They include the
 
 `/ranks command add placeholders`
 
-**{player} {player_uid} {msg} {broadcast} {title} {actionBar} {inline} {inlinePlayer} {sync} {syncPlayer} {ifPerm:<perm>} {ifNotPerm:<perm>} {firstJoin} {promote} {demote} {balanceInitial} {balanceFinal} {currency} {originalRankCost} {rankupCost} {ladder} {rank} {rankTag} {targetRank} {targetRankTag}**
+**{player} {player_uid} {msg} {broadcast} {title} {actionBar} {inline} {inlinePlayer} {sync} {syncPlayer} {range: <low> <high>} {ifPerm:<perm>} {ifNotPerm:<perm>} {firstJoin} {promote} {demote} {balanceInitial} {balanceFinal} {currency} {originalRankCost} {rankupCost} {ladder} {rank} {rankTag} {targetRank} {targetRankTag}**
 
 `/ranks ladder command add placeholders`
 
-**{player} {player_uid} {msg} {broadcast} {title} {actionBar} {inline} {inlinePlayer} {sync} {syncPlayer} {ifPerm:<perm>} {ifNotPerm:<perm>} {firstJoin} {promote} {demote} {balanceInitial} {balanceFinal} {currency} {originalRankCost} {rankupCost} {ladder} {rank} {rankTag} {targetRank} {targetRankTag}**
+**{player} {player_uid} {msg} {broadcast} {title} {actionBar} {inline} {inlinePlayer} {sync} {syncPlayer} {range: <low> <high>} {ifPerm:<perm>} {ifNotPerm:<perm>} {firstJoin} {promote} {demote} {balanceInitial} {balanceFinal} {currency} {originalRankCost} {rankupCost} {ladder} {rank} {rankTag} {targetRank} {targetRankTag}**
 
 `/mines command add placeholders`
 
-**{player} {player_uid} {msg} {broadcast} {title} {actionBar} {inline} {inlinePlayer} {sync} {syncPlayer} {ifPerm:<perm>} {ifNotPerm:<perm>}**
+**{player} {player_uid} {msg} {broadcast} {title} {actionBar} {inline} {inlinePlayer} {sync} {syncPlayer} {range: <low> <high>} {ifPerm:<perm>} {ifNotPerm:<perm>}**
 
 `/mines blockevent add placeholders`
 
-**{player} {player_uid} {msg} {broadcast} {title} {actionBar} {inline} {inlinePlayer} {sync} {syncPlayer} {ifPerm:<perm>} {ifNotPerm:<perm>} {blockName} {mineName} {locationWorld} {locationX} {locationY} {locationZ} {coordinates} {worldCoordinates} {blockCoordinates} {blockChance} {blockIsAir} {blocksPlaced} {blockRemaining} {blocksMinedTotal} {mineBlocksRemaining} {mineBlocksRemainingPercent} {mineBlocksTotalMined} {mineBlocksSize} {blockMinedName} {blockMinedNameFormal} {blockMinedBlockType} {eventType} {eventTriggered} {utilsDecay}**
+**{player} {player_uid} {msg} {broadcast} {title} {actionBar} {inline} {inlinePlayer} {sync} {syncPlayer} {range: <low> <high>} {ifPerm:<perm>} {ifNotPerm:<perm>} {blockName} {mineName} {locationWorld} {locationX} {locationY} {locationZ} {coordinates} {worldCoordinates} {blockCoordinates} {blockChance} {blockIsAir} {blocksPlaced} {blockRemaining} {blocksMinedTotal} {mineBlocksRemaining} {mineBlocksRemainingPercent} {mineBlocksTotalMined} {mineBlocksSize} {blockMinedName} {blockMinedNameFormal} {blockMinedBlockType} {eventType} {eventTriggered} {utilsDecay}**
 
 
 
@@ -704,6 +704,9 @@ If a placeholder is marked with **Non-Positional**, that means that the placehol
 * **{syncPlayer}** - Submit the command to run in a synchronous thread at the first opportunity. This runs the command as the player; if the player does not have access to run the specified command, then it will fail. Since the command is submitted, it may have to wait behind other tasks.  **Non-Postional.**
 
 
+* **{range: <low> <high>}** - This is a global placeholder that will insert an integer value that is randomly selected from the specified range from <low> to <high>, inclusive of the high value.  So `{range: 5 7}` would have possible values of 5, 6, and 7.  These randomly selected values are not weighted and may not present an even distribution.  Negative values are also supported too.
+
+
 * **{ifPerm:<perm>};** - Runs the commands that follows this placeholder, only if the player has the specified permission. NOTE: In order for this to work properly, it must be immediately be followed by a semi-colon so it's treated as it's own "command".
 * **{ifNotPerm:<perm>};** - Runs the commands that follows this placeholder, but only if the player DOES NOT have the specified permission. NOTE: In order for this to work properly, it must be immediately be followed by a semi-colon so it's treated as it's own "command".
 
@@ -712,12 +715,19 @@ If a placeholder is marked with **Non-Positional**, that means that the placehol
 
 
 * **{promote}** - This runs the command only on promotions such as rankup, promote, and setRank. **Non-Positional.**
-* **{demote}** - This runs the command only on demotions such as demote. **Non-Positional.**c
+* **{demote}** - This runs the command only on demotions such as demote. **Non-Positional.**c
+
 
 * **{balanceInitial}** - The player's balance before the rankup event was ran. 
 * **{balanceFinal}** - The player's balance after the rankup event was ran. 
-* **{targetRank}** - The next rank's name. * **{targetRankTag}** - The next ranks's tag value. 
-* **{currency}** - If the rank is using a different currency, then this parameter would provide the name of that currency. * **{originalRankCost}** - The rank cost for ranking up, but without the global rank cost multipliers.* **{rankupCost}** - The rank cost for ranking up, including the global rank cost multipliers.* **{ladder}** - The current ladder name. * **{rank}** - The current rank name. * **{rankTag}** - The current rank's tag value. 
+* **{targetRank}** - The next rank's name. 
+* **{targetRankTag}** - The next ranks's tag value. 
+* **{currency}** - If the rank is using a different currency, then this parameter would provide the name of that currency. 
+* **{originalRankCost}** - The rank cost for ranking up, but without the global rank cost multipliers.
+* **{rankupCost}** - The rank cost for ranking up, including the global rank cost multipliers.
+* **{ladder}** - The current ladder name. 
+* **{rank}** - The current rank name. 
+* **{rankTag}** - The current rank's tag value. 
 
 * **{blockName}** - The name of the block that was mined. 
 * **{mineName}** - The mine where the block was mined. 
