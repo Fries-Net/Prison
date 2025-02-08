@@ -301,6 +301,31 @@ public class RankLadder
     	return results;
     }
     
+    
+    /**
+     * This function should never be used since magic numbers as used in
+     * the rank ID are no longer valid.  This function is ONLY used when loading
+     * old player file data so it can be converted to the newer format.
+     * 
+     * @param rankId
+     * @return
+     */
+    public Rank getRank( int rankId ) {
+    	Rank results = null;
+    	
+    	if ( rankId != -1 ) {
+    		
+    		for ( Rank r : ranks ) {
+    			if ( r.getId() != -1 && r.getId() == rankId ) {
+    				results = r;
+    				break;
+    			}
+    		}
+    	}
+    	
+    	return results;
+    }
+    
 	/**
      * Add a rank to this ladder.
      *

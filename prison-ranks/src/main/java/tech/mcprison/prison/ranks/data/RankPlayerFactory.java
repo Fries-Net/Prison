@@ -20,6 +20,7 @@ import tech.mcprison.prison.ranks.PrisonRanks;
 import tech.mcprison.prison.ranks.commands.RankUpCommand;
 import tech.mcprison.prison.ranks.events.FirstJoinEvent;
 import tech.mcprison.prison.ranks.managers.LadderManager;
+import tech.mcprison.prison.ranks.managers.PlayerManager;
 import tech.mcprison.prison.store.Document;
 import tech.mcprison.prison.util.ConversionUtil;
 
@@ -50,6 +51,7 @@ public class RankPlayerFactory
 //	        LinkedTreeMap<String, Object> blocksMinedLocal =
 //	        		(LinkedTreeMap<String, Object>) document.get("blocksMined");
 	        
+	        LadderManager ladderManager = PrisonRanks.getInstance().getLadderManager();
 	        
 
 	        for (String key : ranksLocal.keySet()) {
@@ -57,17 +59,75 @@ public class RankPlayerFactory
 	        	Object rankObj = ranksLocal.get(key);
 	        	
 	        	if ( rankObj instanceof Double ) {
+	        		
+	        		// Example of this kind of data:
+	        		//   "ranks": {
+	        	    //      "default": 2
+	        	    //    },
+
+	        		
 	        		int rankId = ConversionUtil.doubleToInt( rankObj );
-	        		rankPlayer.getRanksRefs().put(key, rankId );
-	        	}
+	        		
+	        		RankLadder ladder = ladderManager.getLadder( key );
+        			Rank rank = ladder.getRank( rankId );
+        			
+        			// Setups up the rank for the player and recalculates all of the rank multipliers:
+        			rankPlayer.addRank( rank );
+	        		
+	        		// Obsolete, but used when upgrading from an older version of prison.
+//	        		rankPlayer.getRanksRefs().put(key, rankId );
+	        	} 
 	        	else {
+	        		
+	        		// Example of this newer format of data:
+	        		//  Note; rankId should always be -1 when using this format so ignore it.
+	        		//   "ranks": {
+			        //	    "default": {
+			        //	        "ladderName": "default",
+			        //	        "rankId": -1,
+			        //	        "rankName": "C"
+			        //	      }
+			        //	    },
+
+	        		
 	        		// It's a json object:
-	        		// We only need to get the rankId from the json String, but the other fields are there
-	        		// for human readability.
+	        		// RankID should be obsolete, so use ladderName and rankName.
 	        		String json = rankObj.toString();
 	        		RankPlayerFactoryDataRank rData = jfIO.fromString( json, RankPlayerFactoryDataRank.class );
 	        		if ( rData != null ) {
-	        			rankPlayer.getRanksRefs().put( rData.getLadderName(), rData.getRankId() );
+	        			String ladderName = rData.getLadderName();
+	        			String rankName = rData.getRankName();
+
+	        			// Use of rankId is obsolete so ignore it:
+	        			int rankId = rData.getRankId();
+//	        			rankPlayer.getRanksRefs().put( rData.getLadderName(), rankId );
+	        			
+	        			
+	        			RankLadder ladder = ladderManager.getLadder( ladderName );
+	        			Rank rank = ladder.getRank( rankName );
+	        			
+	        			if ( rank == null && rankId != -1 ) {
+	        				// Fall back to rankId since there was a short time when rankId was used in this
+	        				// json format without a valid rankName.
+	        				rank = ladder.getRank( rankId );
+	        			}
+	        			
+	        			// Setups up the rank for the player and recalculates all of the rank multipliers:
+	        			if ( rank != null ) {
+	        				
+	        				rankPlayer.addRank( rank );
+	        			}
+	        			else {
+	        				String msg = String.format( 
+	        						"RankPlayerFactory.createRankPlayer: Failed to add a player rank. " +
+	        						"Player: %s  json: %s",
+	        						rankPlayer.getName(), 
+	        						json
+	        						);
+	        				
+	        				Output.get().logWarn( msg );
+	        			}
+	        			
 	        		}
 	        	}
 	        	

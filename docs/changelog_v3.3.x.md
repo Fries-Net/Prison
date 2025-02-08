@@ -14,7 +14,12 @@
 These change logs represent the work that has been going on within prison. 
 
 
-# 3.3.0-alpha.19e 2025-02-07
+# 3.3.0-alpha.19e 2025-02-08
+
+
+* **Players: On reloading players, and also sometimes on server restarts, player's ranks were being reset back to the default ranks on each ladder.**
+This was caused by a bug where the rankId was trying to be used instead of the rank name.  RankId is obsolete, but is still in the code so older player files can be loaded and converted to the new format.
+The code that handles this conversion, and the basic loading, was rewritten to properly handle the rank name and rankId if it is still required.
 
 
 * **Sellall: Removed use of ConfigurationSection since it works fine until a new value is being added.**

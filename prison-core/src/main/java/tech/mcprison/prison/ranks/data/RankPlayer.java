@@ -90,6 +90,8 @@ public class RankPlayer
     
     private TreeMap<RankLadder, PlayerRank> ladderRanks;
     
+    // Obsolete:  rank ids no longer are being used... 
+    // except when loading old format data prior to being converted.
     // ranks is the storage structure used to save the player's ladder & ranks:
     private HashMap<String, Integer> ranksRefs; // <Ladder Name, Rank ID>
     
@@ -582,7 +584,7 @@ public class RankPlayer
      */
     public void addRank( Rank rank) {
         if ( rank.getLadder() == null ) {
-            throw new IllegalArgumentException("Rank must be on ladder.");
+        	throw new IllegalArgumentException("Rank must be on ladder.");
         }
 
         String ladderName = rank.getLadder().getName();
@@ -762,7 +764,19 @@ public class RankPlayer
     }
     
     public boolean hasLadder( String ladderName ) {
-    	return ranksRefs.containsKey( ladderName );
+    	boolean results = false;
+    	
+    	Set<RankLadder> ladders = getLadderRanks().keySet();
+    	
+    	for (RankLadder ladder : ladders) {
+			if ( ladderName !=  null && ladder.getName().equalsIgnoreCase(ladderName) ) {
+				results = true;
+				break;
+			}
+		}
+    	
+    	return results;
+//    	return ranksRefs.containsKey( ladderName );
     }
 
 //    /**
