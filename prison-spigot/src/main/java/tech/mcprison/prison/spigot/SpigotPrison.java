@@ -938,15 +938,24 @@ public class SpigotPrison
         }
     }
 
+    /**
+     * This will initialize the two fields, commandMap and knownCommands, which are from the
+     * Bukkit server.  These will give prison's command handler the ability to easily access
+     * these fields, which are not normally accessible.
+     */
     private void initCommandMap() {
         try {
             commandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
             commandMap.setAccessible(true);
+            
             knownCommands = SimpleCommandMap.class.getDeclaredField("knownCommands");
             knownCommands.setAccessible(true);
-        } catch (NoSuchFieldException e) {
+        } 
+        catch (NoSuchFieldException e) {
             getLogger().severe(
-                    "&c&lReflection error: &7Ensure that you're using the latest version of Spigot and Prison.");
+                    "&c&lReflection error: &7Ensure that you're using the latest version of Spigot and Prison. "
+                    + "Unable to access Bukkit.getServer().commandMap field. "
+                    + "or the org.bukkit.command.SimpleCommandMap.knownCommands field.");
             e.printStackTrace();
         }
     }

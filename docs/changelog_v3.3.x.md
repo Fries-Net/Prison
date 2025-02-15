@@ -14,10 +14,15 @@
 These change logs represent the work that has been going on within prison. 
 
 
-# 3.3.0-alpha.19e 2025-02-08
+# 3.3.0-alpha.19f 2025-02-15
 
 
-# 3.3.0-alpha.19f 2025-02-08
+* **Prison debug: Add a 'commandHandler' to the debugger activeTargets so that way you can selectively enable a commandHandler log message outside of if debug is enabled or not.** 
+This is to troubleshoot if bukkit is actually passing commands to prison correctly.
+
+
+
+## 3.3.0-alpha.19f 2025-02-15
 
 * Support for spigot/paper v1.21.4
 * Bug fix: NBT-lib.  If NBT-lib fails, prison no longer allows the stacktrace to fill the console/logs. This library needs to be updated with each release of paper/spigot and when it is out of date it can throw a lot of errors.

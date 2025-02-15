@@ -32,6 +32,7 @@ import tech.mcprison.prison.internal.CommandSender;
 import tech.mcprison.prison.output.ChatDisplay;
 import tech.mcprison.prison.output.LogLevel;
 import tech.mcprison.prison.output.Output;
+import tech.mcprison.prison.output.Output.DebugTarget;
 
 
 public class RegisteredCommand
@@ -160,10 +161,45 @@ public class RegisteredCommand
      * @param args
      */
     protected void execute(CommandSender sender, String[] args) {
+    	execute( sender, args, true );
+    }
+	protected void execute(CommandSender sender, String[] args, boolean allowDebug ) {
+    	
+    	// Only enable debug mode if the selective debug target is commandHanlder.
+    	// To enable this use ...
+    	boolean debug = Output.get().isActiveTarget( DebugTarget.commandHandler );
     	
     	// First ensure the player is not locked out of this command:
     	if ( !handler.hasCommandAccess(sender, this, getLabel(), args) ) {
+    		
+    		if ( debug ) {
+    			String argz = "";
+    			for (String arg : args) {
+    				argz += arg + " ";
+    			}
+    			
+    			String msg = String.format( 
+    					"RegisteredCommand.execute: Player %s does not have access to a command: [%s]",
+    					sender.getName(), 
+    					(getLabel() + " " + argz).trim()
+    					);
+    			Output.get().logInfo( msg );
+    		}
     		return;
+    	}
+    	
+    	if ( debug ) {
+    		String argz = "";
+    		for (String arg : args) {
+    			argz += arg + " ";
+    		}
+    		
+    		String msg = String.format( 
+    				"RegisteredCommand.execute: Player %s is attempting to run command: [%s]",
+    				sender.getName(), 
+    				(getLabel() + " " + argz).trim()
+    				);
+    		Output.get().logInfo( msg );
     	}
     	
         if (!testPermission(sender)) {
@@ -202,7 +238,7 @@ public class RegisteredCommand
             	// Strip first arg, then recursively try again
                 String[] nargs = new String[args.length - 1];
                 System.arraycopy(args, 1, nargs, 0, args.length - 1);
-                command.execute( sender, nargs );
+                command.execute( sender, nargs, false );
             }
         } 
         else {

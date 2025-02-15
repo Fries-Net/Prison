@@ -83,7 +83,9 @@ public class Output
     	
     	rankup,
 //    	support
-    	blockConstraints
+    	blockConstraints, 
+    	
+    	commandHandler
     	;
     	
     	public static DebugTarget fromString( String target ) {
@@ -615,6 +617,18 @@ public class Output
      */
     public boolean isSelectiveTarget( DebugTarget debugTarget ) {
     	return getSelectiveDebugTargets().contains( debugTarget );
+    }
+    
+    /**
+     * <p>This will return a value of true if the debug target was
+     * enabled by the admin/console.
+     * </p>
+     * 
+     * @param debugTarget
+     * @return
+     */
+    public boolean isActiveTarget( DebugTarget debugTarget ) {
+    	return getActiveDebugTargets().contains( debugTarget );
     }
     
     public boolean isDebug() {

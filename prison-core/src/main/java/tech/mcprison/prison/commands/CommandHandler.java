@@ -983,7 +983,7 @@ public class CommandHandler {
         else {
 
         	try {
-        		rootCommand.execute(sender, args);
+        		rootCommand.execute( sender, args );
         	}
         	catch ( Exception e ) {
         		String message = "Prison CommandHander: onCommand: " + e.getMessage() + 
