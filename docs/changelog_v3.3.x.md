@@ -17,6 +17,19 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19e 2025-02-08
 
 
+# 3.3.0-alpha.19f 2025-02-08
+
+* Support for spigot/paper v1.21.4
+* Bug fix: NBT-lib.  If NBT-lib fails, prison no longer allows the stacktrace to fill the console/logs. This library needs to be updated with each release of paper/spigot and when it is out of date it can throw a lot of errors.
+* New prison command placeholder: `{range: <low> <high>}`.  Can be used in rank commands, mine commands, ladder commands, and even Block event commands. This can help insert a random number in your commands, such as a random number of items that you may give a player.
+* Bug fix: Players when reloading players, or on server startup, player's ranks could have been reset. This fixes that issue.
+* Bug fix: Rankups. Changes to how internal references to players caused some problems on some commands by not returning the correct player objects.  See next item.
+* Bug fix and enhancement: There was an issue with how prison would get player objects from bukkit. It generally wasn't a problem, unless you had over a few thousand players. The problem was that prison would get OfflinePLayers from bukkit, and that would cause bukkit to lag the server badly since it would consume a lot of resources and time trying to find player files within the bukkit world folders.  Prison no longer asks for OfflinePlayers.  Prison was tested with 35,000 + players and the issue is now resolved.
+* Sellall and Blocks: Updated some of the internals in sellall to be able to better support custom blocks that have been added to sellall, but are not within prison.  Prison cannot spawn these blocks, but it can sell them now.
+* 
+
+
+
 * **Placeholders: Updated the docs to include the new command placeholder: '{range: }'**
 
 
