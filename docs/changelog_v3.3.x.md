@@ -17,6 +17,11 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19f 2025-02-15
 
 
+* **Rankupmax broadcast bug: Sending the console log message to all players and the player too.**
+Now sends the broadcast message that is associated with the normal rankup command.
+
+
+
 * **Prison debug: Add a 'commandHandler' to the debugger activeTargets so that way you can selectively enable a commandHandler log message outside of if debug is enabled or not.** 
 This is to troubleshoot if bukkit is actually passing commands to prison correctly.
 
