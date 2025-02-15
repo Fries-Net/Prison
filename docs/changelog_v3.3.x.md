@@ -17,6 +17,9 @@ These change logs represent the work that has been going on within prison.
 # 3.3.0-alpha.19f 2025-02-15
 
 
+* **RankupMax: Fix  a bug where after successfully ranking up a few ranks, it always shows an error message related to the last attempt because the player cannot afford the next rank.**
+
+
 * **Rankupmax broadcast bug: Sending the console log message to all players and the player too.**
 Now sends the broadcast message that is associated with the normal rankup command.
 

@@ -793,7 +793,7 @@ public class RankUpCommand
 //        			sender.getName(), cmdTasks );
         	
         	
-        	processResults( sender, rankPlayer.getName(), results, null, ladder, currency, sbRanks );
+        	processResults( sender, rankPlayer.getName(), results, null, ladder, currency, sbRanks, mode );
         	
         	// If the last rankup attempt was successful and they are trying to rankup as many times as possible: 
         	// Note they used to restrict rankupmax from working on prestige ladder... 
@@ -1029,7 +1029,7 @@ public class RankUpCommand
         	// submit cmdTasks...
         	submitCmdTasks( rPlayer, cmdTasks );
         	
-        	processResults( sender, rPlayer.getName(), results, null, ladder, currency, null );
+        	processResults( sender, rPlayer.getName(), results, null, ladder, currency, null, RankupModes.ONE_RANK );
         	
         }
         else {
@@ -1112,7 +1112,7 @@ public class RankUpCommand
         	// submit cmdTasks
         	submitCmdTasks( rPlayer, cmdTasks );
         	
-        	processResults( sender, rPlayer.getName(), results, null, ladder, currency, null );
+        	processResults( sender, rPlayer.getName(), results, null, ladder, currency, null, RankupModes.ONE_RANK );
         	
         }
         else {
@@ -1205,7 +1205,7 @@ public class RankUpCommand
         	
         	processResults( rankPlayer, rankPlayer.getName(), results, 
         			pRank.getName(), pRank.getLadder().getName(), 
-        			pRank.getCurrency(), null );
+        			pRank.getCurrency(), null, RankupModes.ONE_RANK );
         }
     }
     
@@ -1234,7 +1234,7 @@ public class RankUpCommand
     		
     		processResults( rankPlayer, rankPlayer.getName(), results, 
     				pRank.getName(), pRank.getLadder().getName(), 
-    				pRank.getCurrency(), null );
+    				pRank.getCurrency(), null, RankupModes.ONE_RANK );
     	}
     }
     
@@ -1253,7 +1253,7 @@ public class RankUpCommand
     	
     	
     	processResults( sender, rankPlayer.getName(), results, pRank.getName(), ladder.getName(), 
-    			currency, sbRanks );
+    			currency, sbRanks, RankupModes.ONE_RANK );
     	
     }
     
@@ -1283,7 +1283,7 @@ public class RankUpCommand
         	// submit cmdTasks
 			submitCmdTasks( rankPlayer, cmdTasks );
         	
-        	processResults( sender, rankPlayer.getName(), results, rank, ladderName, currency, null );
+        	processResults( sender, rankPlayer.getName(), results, rank, ladderName, currency, null, RankupModes.ONE_RANK );
         }
 	}
 
@@ -1333,7 +1333,8 @@ public class RankUpCommand
 	public void processResults( CommandSender sender, String playerName, 
 					RankupResults results, 
 					String rank, String ladder, String currency, 
-					StringBuilder sbRanks ) {
+					StringBuilder sbRanks, 
+					RankupModes mode ) {
 	
 		switch (results.getStatus()) {
             case RANKUP_SUCCESS:
@@ -1347,7 +1348,14 @@ public class RankUpCommand
 
                 break;
             case RANKUP_CANT_AFFORD:
-            	ranksRankupCannotAffordMsg( sender, results );
+
+            	// If mode is MAX_RANKS and was already successful, then do not display
+            	// cannot afford message when it hits the end of the max rankups...
+            	if ( mode != RankupModes.MAX_RANKS || 
+            			mode == RankupModes.MAX_RANKS && sbRanks.length() == 0 ) {
+            		
+            		ranksRankupCannotAffordMsg( sender, results );
+            	}
 	            	
                 break;
             case RANKUP_LOWEST:
